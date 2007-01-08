@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 <plugin
-   id="edu.utexas.korat"
+   id="com.scully.korat"
    name="Korat Plug-in"
    version="0.0.3"
    provider-name="Korat Geniuses"
@@ -45,11 +45,11 @@
          point="org.eclipse.ui.popupMenus">
       <objectContribution
             objectClass="org.eclipse.jdt.core.IMethod"
-            id="edu.utexas.korat.contribution.genfin">
+            id="com.scully.korat.contribution.genfin">
          <menu
                label="&amp;Korat"
                path="additions"
-               id="edu.utexas.korat.popup.menu1">
+               id="com.scully.korat.popup.menu1">
             <separator name="slot1" />
          </menu>
          <action
@@ -57,8 +57,8 @@
                label="&amp;Generate Finitization Skeleton for Method"
                class="com.scully.korat.popup.actions.GenerateFinitization"
                style="push"
-               menubarPath="edu.utexas.korat.popup.menu1/slot1"
-               id="edu.utexas.korat.genfin">
+               menubarPath="com.scully.korat.popup.menu1/slot1"
+               id="com.scully.korat.genfin">
          </action>
       </objectContribution>
    </extension>

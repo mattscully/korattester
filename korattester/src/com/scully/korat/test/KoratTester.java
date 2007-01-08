@@ -81,7 +81,7 @@ public class KoratTester
             singleResult = testCandidate(method);
             if (!singleResult)
             {
-                System.out.println("\tCandidate Test FAILED: Invariant broken for parameter(s): "
+                System.out.println("\tCandidate Test FAILED: Invariant failed for parameter(s): "
                         + ArrayUtils.toString(this.paramValues));
             }
             result &= singleResult;
