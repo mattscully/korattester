@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="edu.utexas.korat"
+   name="Korat Plug-in"
+   version="0.0.3"
+   provider-name="Korat Geniuses"
+   class="com.scully.korat.KoratPlugin">
+
+   <runtime>
+      <library name="korat.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/commons-lang-2.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/commons-collections-3.2.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/commons-digester-1.7.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/commons-logging-1.1.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/commons-beanutils.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/commons-betwixt-20060810.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/javassist.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.core.resources"/>
+   </requires>
+
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            objectClass="org.eclipse.jdt.core.IMethod"
+            id="edu.utexas.korat.contribution.genfin">
+         <menu
+               label="&amp;Korat"
+               path="additions"
+               id="edu.utexas.korat.popup.menu1">
+            <separator name="slot1" />
+         </menu>
+         <action
+               enablesFor="1"
+               label="&amp;Generate Finitization Skeleton for Method"
+               class="com.scully.korat.popup.actions.GenerateFinitization"
+               style="push"
+               menubarPath="edu.utexas.korat.popup.menu1/slot1"
+               id="edu.utexas.korat.genfin">
+         </action>
+      </objectContribution>
+   </extension>
+
+</plugin>
