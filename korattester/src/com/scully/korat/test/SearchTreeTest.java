@@ -23,8 +23,11 @@ public class SearchTreeTest extends TestCase
             {
                 SearchTree pre = (SearchTree) getPreObject();
                 SearchTree post = (SearchTree) getPostObject();
+                // this gets the parameter that was passed to the remove() method
                 int value = ((Integer) ((Object[]) getValues())[0]).intValue();
+                // this is the value returned from the remove() method
                 boolean result = ((Boolean) getResult()).booleanValue();
+                // tests whether post condition was true
                 return post.repOk() && !post.contains(value) && result == pre.contains(value);
             };
         });
