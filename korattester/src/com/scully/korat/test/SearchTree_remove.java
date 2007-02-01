@@ -6,6 +6,7 @@ import com.scully.korat.finitization.*;
 import com.scully.korat.map.BeanXmlMapper;
 import com.scully.korat.map.StateFieldDTO;
 import com.scully.korat.map.StateObjectDTO;
+import com.scully.korat.map.StateSpaceBuilder;
 import com.scully.korat.map.TestStateSpaceDTO;
 
 public class SearchTree_remove {
@@ -49,61 +50,36 @@ public class SearchTree_remove {
             int MIN_Node_value,
             int MAX_Node_value) {
         
-        TestStateSpaceDTO testStateSpace = new TestStateSpaceDTO();
+        StateSpaceBuilder stateSpace = new StateSpaceBuilder();
 
         // set the root
-        testStateSpace.setRootClass("com.scully.korat.test.SearchTree");
+        stateSpace.setRootClass("com.scully.korat.test.SearchTree");
 
         // ==> create StateObjects
 
         // Node
-        StateObjectDTO stateObject = new StateObjectDTO();
-        stateObject.setType("com.scully.korat.test.SearchTree$Node");
-        stateObject.setQuantity(NUM_Node);
-        stateObject.setIncludeNullFlag(true);
-        testStateSpace.addStateObject(stateObject);
+        stateSpace.addStateObject("com.scully.korat.test.SearchTree$Node", NUM_Node, true);
 
         // ==> create StateFields
 
         // SearchTree
         // root
-        StateFieldDTO stateField = new StateFieldDTO();
-        stateField.setName("root");
-        stateField.setParentClass("com.scully.korat.test.SearchTree");
-        stateField.setType("com.scully.korat.test.SearchTree$Node");
-        testStateSpace.addStateField(stateField);
+        stateSpace.addStateField("root", "com.scully.korat.test.SearchTree$Node", "com.scully.korat.test.SearchTree");
+        
         // size
-        stateField = new StateFieldDTO();
-        stateField.setName("size");
-        stateField.setParentClass("com.scully.korat.test.SearchTree");
-        stateField.setType(int.class.getName());
-        stateField.setMin(MIN_size);
-        stateField.setMax(MAX_size);
-        testStateSpace.addStateField(stateField);
+        stateSpace.addStateField("size", int.class.getName(), "com.scully.korat.test.SearchTree", MIN_size, MAX_size);
 
         // SearchTree$Node
         // left
-        stateField = new StateFieldDTO();
-        stateField.setName("left");
-        stateField.setParentClass("com.scully.korat.test.SearchTree$Node");
-        stateField.setType("com.scully.korat.test.SearchTree$Node");
-        testStateSpace.addStateField(stateField);
-        // right
-        stateField = new StateFieldDTO();
-        stateField.setName("right");
-        stateField.setParentClass("com.scully.korat.test.SearchTree$Node");
-        stateField.setType("com.scully.korat.test.SearchTree$Node");
-        testStateSpace.addStateField(stateField);
-        // value
-        stateField = new StateFieldDTO();
-        stateField.setName("value");
-        stateField.setParentClass("com.scully.korat.test.SearchTree$Node");
-        stateField.setType(int.class.getName());
-        stateField.setMin(MIN_Node_value);
-        stateField.setMax(MAX_Node_value);
-        testStateSpace.addStateField(stateField);
+        stateSpace.addStateField("left", "com.scully.korat.test.SearchTree$Node", "com.scully.korat.test.SearchTree$Node");
         
-        return testStateSpace;
+        // right
+        stateSpace.addStateField("right", "com.scully.korat.test.SearchTree$Node", "com.scully.korat.test.SearchTree$Node");
+        
+        // value
+        stateSpace.addStateField("value", int.class.getName(), "com.scully.korat.test.SearchTree$Node", MIN_Node_value, MAX_Node_value);
+        
+        return stateSpace.getStateSpace();
     }
 
 	public static TestStateSpaceDTO createFiniteStateSpace(int scope) {

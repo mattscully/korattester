@@ -6,26 +6,27 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IField;
-import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.IObjectActionDelegate;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPart;
 
+import com.scully.korat.KoratPlugin;
 import com.scully.korat.popup.actions.model.FinMethod;
-import com.scully.korat.popup.actions.model.MainMethod;
-
+import com.scully.korat.wizards.StateSpaceWizard;
 
 public class GenerateFinitization implements IObjectActionDelegate
 {
 
-    IMethod lastSelection;
+//    IType lastSelection;
+    IStructuredSelection lastSelection;
 
     /**
      * Constructor for Action1.
@@ -47,11 +48,16 @@ public class GenerateFinitization implements IObjectActionDelegate
      */
     public void run(IAction action)
     {
-        String msg = "Generate Finitization was executed.";
+//        String msg = "Generate Finitization was executed.";
         if (this.lastSelection != null)
         {
+            // popup Wizard Dialog
+            StateSpaceWizard wizard = new StateSpaceWizard();
+            wizard.init(getWorkbench(), (IStructuredSelection) this.lastSelection);
+            WizardDialog dialog = new WizardDialog(getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
+            dialog.open();
             //			msg += "\n" + this.lastSelection.getClass();
-            generateFinitizationClass();
+            //            generateFinitizationClass();
         }
         /*
          * Shell shell = new Shell(); MessageDialog.openInformation( shell,
@@ -60,51 +66,59 @@ public class GenerateFinitization implements IObjectActionDelegate
     }
 
     /**
-     *  
+     * @return
      */
-    private void generateFinitizationClass()
+    private IWorkbench getWorkbench()
     {
-        // get the encapsulating class name
-        IType declaringType = this.lastSelection.getDeclaringType();
-        String className = declaringType.getTypeQualifiedName();
-        String finClassName = className + "_" + this.lastSelection.getElementName();
-        String finFileName = finClassName + ".java";
-
-        try
-        {
-            IResource resource = declaringType.getUnderlyingResource();
-            if (resource instanceof IFile)
-            {
-                IFile file = (IFile) resource;
-                StringBuffer fileSource = new StringBuffer(512);
-                fileSource.append(getPackageStatement(declaringType));
-                fileSource.append(getImportStatements());
-                fileSource.append("public class ").append(finClassName).append(
-                        " {\n\n");
-
-                // create fin method
-                FinMethod finMethod = new FinMethod(className);
-                // recursively add fields for this type and each sub type
-                addFieldsForType(declaringType, finMethod);
-                
-                MainMethod mainMethod = new MainMethod(this.lastSelection, finMethod.getParameters());
-
-                fileSource.append(finMethod.toString());
-                fileSource.append(mainMethod.toString()).append("}");
-                
-                createFinFileInFolder(file.getParent(), finFileName, fileSource.toString());
-            }
-
-        }
-        catch (JavaModelException e)
-        {
-            e.printStackTrace();
-        }
-        catch (CoreException e)
-        {
-            e.printStackTrace();
-        }
+        return KoratPlugin.getDefault().getWorkbench();
     }
+
+    //    /**
+    //     *  
+    //     */
+    //    private void generateFinitizationClass()
+    //    {
+    //        // get the encapsulating class name
+    //        IType declaringType = this.lastSelection.getDeclaringType();
+    //        String className = declaringType.getTypeQualifiedName();
+    //        String finClassName = className + "_" + this.lastSelection.getElementName();
+    //        String finFileName = finClassName + ".java";
+    //
+    //        try
+    //        {
+    //            IResource resource = declaringType.getUnderlyingResource();
+    //            if (resource instanceof IFile)
+    //            {
+    //                IFile file = (IFile) resource;
+    //                StringBuffer fileSource = new StringBuffer(512);
+    //                fileSource.append(getPackageStatement(declaringType));
+    //                fileSource.append(getImportStatements());
+    //                fileSource.append("public class ").append(finClassName).append(
+    //                        " {\n\n");
+    //
+    //                // create fin method
+    //                FinMethod finMethod = new FinMethod(className);
+    //                // recursively add fields for this type and each sub type
+    //                addFieldsForType(declaringType, finMethod);
+    //                
+    //                MainMethod mainMethod = new MainMethod(this.lastSelection, finMethod.getParameters());
+    //
+    //                fileSource.append(finMethod.toString());
+    //                fileSource.append(mainMethod.toString()).append("}");
+    //                
+    //                createFinFileInFolder(file.getParent(), finFileName, fileSource.toString());
+    //            }
+    //
+    //        }
+    //        catch (JavaModelException e)
+    //        {
+    //            e.printStackTrace();
+    //        }
+    //        catch (CoreException e)
+    //        {
+    //            e.printStackTrace();
+    //        }
+    //    }
 
     /**
      * @return
@@ -126,12 +140,12 @@ public class GenerateFinitization implements IObjectActionDelegate
     private String getPackageStatement(IType type)
     {
         String packageName = type.getPackageFragment().getElementName();
-        if("".equals(packageName))
+        if ("".equals(packageName))
         {
             return "";
         }
         StringBuffer buf = new StringBuffer("package ");
-        buf.append( type.getPackageFragment().getElementName());
+        buf.append(type.getPackageFragment().getElementName());
         buf.append(";\n\n");
         return buf.toString();
     }
@@ -141,8 +155,7 @@ public class GenerateFinitization implements IObjectActionDelegate
      * @param finMethod
      * @throws JavaModelException
      */
-    private void addFieldsForType(IType type, FinMethod finMethod)
-            throws JavaModelException
+    private void addFieldsForType(IType type, FinMethod finMethod) throws JavaModelException
     {
         IField[] fields = type.getFields();
         for (int j = 0; j < fields.length; j++)
@@ -158,8 +171,7 @@ public class GenerateFinitization implements IObjectActionDelegate
      * @param finMethod
      * @throws JavaModelException
      */
-    private void addFieldsForTypes(IType[] types, FinMethod finMethod)
-            throws JavaModelException
+    private void addFieldsForTypes(IType[] types, FinMethod finMethod) throws JavaModelException
     {
         if (types == null)
         {
@@ -177,17 +189,16 @@ public class GenerateFinitization implements IObjectActionDelegate
      * @param file
      * @throws CoreException
      */
-    private void createFinFileInFolder(IContainer parent, String fileName,
-            String contents) throws CoreException
+    private void createFinFileInFolder(IContainer parent, String fileName, String contents) throws CoreException
     {
         IFile newFile = null;
-        if(parent instanceof IFolder)
+        if (parent instanceof IFolder)
         {
-	        newFile = ((IFolder) parent).getFile(fileName);
+            newFile = ((IFolder) parent).getFile(fileName);
         }
-        else if(parent instanceof IProject)
+        else if (parent instanceof IProject)
         {
-	        newFile = ((IProject) parent).getFile(fileName);
+            newFile = ((IProject) parent).getFile(fileName);
         }
         else
         {
@@ -196,8 +207,7 @@ public class GenerateFinitization implements IObjectActionDelegate
         }
         if (!newFile.exists())
         {
-            ByteArrayInputStream source = new ByteArrayInputStream(contents
-                    .getBytes());
+            ByteArrayInputStream source = new ByteArrayInputStream(contents.getBytes());
             newFile.create(source, true, null);
         }
         else
@@ -205,8 +215,7 @@ public class GenerateFinitization implements IObjectActionDelegate
             // TODO: Finitization class already exists!
             System.err.println("File already exists: " + fileName);
             System.err.println("OVERWRITING...");
-            ByteArrayInputStream source = new ByteArrayInputStream(contents
-                    .getBytes());
+            ByteArrayInputStream source = new ByteArrayInputStream(contents.getBytes());
             newFile.setContents(source, IFile.FORCE + IFile.KEEP_HISTORY, null);
         }
     }
@@ -222,10 +231,15 @@ public class GenerateFinitization implements IObjectActionDelegate
             if (!ss.isEmpty())
             {
                 Object firstObj = ss.getFirstElement();
-                if (firstObj instanceof IMethod)
+                if (firstObj instanceof IType)
                 {
-                    this.lastSelection = (IMethod) firstObj;
+//                    this.lastSelection = (IType) firstObj;
+                    this.lastSelection = ss;
                 }
+//                else if (firstObj instanceof IFile)
+//                {
+//                    this.lastSelection = ss;
+//                }
                 else
                 {
                     this.lastSelection = null;

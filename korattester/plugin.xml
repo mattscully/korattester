@@ -4,7 +4,7 @@
    id="com.scully.korat"
    name="Korat Plug-in"
    version="0.0.3"
-   provider-name="Korat Geniuses"
+   provider-name="Matt Scully"
    class="com.scully.korat.KoratPlugin">
 
    <runtime>
@@ -39,13 +39,14 @@
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.jdt.core"/>
       <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui.ide"/>
    </requires>
-
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
-            objectClass="org.eclipse.jdt.core.IMethod"
-            id="com.scully.korat.contribution.genfin">
+            adaptable="true"
+            id="com.scully.korat.contribution.context.type"
+            objectClass="org.eclipse.jdt.core.IType">
          <menu
                label="&amp;Korat"
                path="additions"
@@ -54,13 +55,28 @@
          </menu>
          <action
                enablesFor="1"
-               label="&amp;Generate Finitization Skeleton for Method"
+               label="&amp;Create State Space"
                class="com.scully.korat.popup.actions.GenerateFinitization"
                style="push"
                menubarPath="com.scully.korat.popup.menu1/slot1"
-               id="com.scully.korat.genfin">
+               id="com.scully.korat.createss">
          </action>
       </objectContribution>
    </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="com.scully.korat"
+            name="Korat"/>
+      <wizard
+            category="com.scully.korat"
+            class="com.scully.korat.wizards.StateSpaceWizard"
+            hasPages="true"
+            icon="icons/sample.gif"
+            id="com.scully.korat.wizards.StateSpaceWizard"
+            name="New State Space Wizard"
+            project="false"/>
+   </extension>
+
 
 </plugin>
