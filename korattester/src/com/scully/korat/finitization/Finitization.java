@@ -7,7 +7,6 @@ package com.scully.korat.finitization;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -38,17 +37,16 @@ public class Finitization
 
     /**
      * <p>All of the registered fields mapped to their field domains.</p>
-     * <p>Key = <code>ObjField</code>, Value = <code>FieldDomain</code></p>
      */
-    Map space = new HashMap();
+    Map<ObjField, FieldDomain> space = new HashMap<ObjField, FieldDomain>();
 
     /**
      * <p>All of the registered fields mapped to their <code>ObjField</code>s.</p>
      * <p>Key = Field, Value = <code>ObjField</code></p>
      */
-    Map objFieldsByName = new HashMap();
+    Map<Field, List<ObjField>> objFieldsByName = new HashMap<Field, List<ObjField>>();
 
-    List fieldOrdering = new ArrayList();
+    List<ObjField> fieldOrdering = new ArrayList<ObjField>();
 
     ObjField[] fieldOrderingCache = null;
 
@@ -126,11 +124,10 @@ public class Finitization
 
             // create Object types in state space
             //            StateObjectDTO[] stateObjects = testStateSpaceDTO.getStateObjects();
-            List stateObjects = testStateSpaceDTO.getStateObjects();
-            Map objSets = new HashMap();
-            for (Iterator iter = stateObjects.iterator(); iter.hasNext();)
+            List<StateObjectDTO> stateObjects = testStateSpaceDTO.getStateObjects();
+            Map<String, ObjSet> objSets = new HashMap<String, ObjSet>();
+            for(StateObjectDTO stateObjectDTO : stateObjects)
             {
-                StateObjectDTO stateObjectDTO = (StateObjectDTO) iter.next();
                 ObjSet objSet = this.createObjects(stateObjectDTO.getType(), stateObjectDTO.getQuantity());
                 if (stateObjectDTO.isIncludeNullFlag())
                 {
@@ -151,10 +148,9 @@ public class Finitization
 
             // map fields to FinSets
             //            StateFieldDTO[] stateFields = testStateSpaceDTO.getStateFields();
-            List stateFields = testStateSpaceDTO.getStateFields();
-            for (Iterator iter = stateFields.iterator(); iter.hasNext();)
+            List<StateFieldDTO> stateFields = testStateSpaceDTO.getStateFields();
+            for(StateFieldDTO stateField : stateFields)
             {
-                StateFieldDTO stateField = (StateFieldDTO) iter.next();
                 Class parent = Class.forName(stateField.getParentClass());
                 Field field = parent.getDeclaredField(stateField.getName());
                 Class type = field.getType();
@@ -164,7 +160,7 @@ public class Finitization
                 }
                 else if (objSets.containsKey(type.getName()))
                 {
-                    this.set(field, (FinSet) objSets.get(type.getName()));
+                    this.set(field, objSets.get(type.getName()));
                 }
                 // TODO: Implement boolean
                 else if (type.equals(boolean.class))
@@ -304,10 +300,8 @@ public class Finitization
         //            // need '.' for appending field name below
         //            name = getSimpleName(c.getName()) + ".";
         //        }
-        Field[] fields = c.getDeclaredFields();
-        for (int i = 0; i < fields.length; i++)
+        for(Field field : c.getDeclaredFields())
         {
-            Field field = fields[i];
             // ignore JML & Korat instrumented fields
             if (field.getName().startsWith("rac$") || field.getName().startsWith("$kor_"))
             {
@@ -327,10 +321,10 @@ public class Finitization
      */
     void addObjFieldByName(Field field, ObjField objField)
     {
-        List objFieldList = (ArrayList) this.objFieldsByName.get(field);
+        List<ObjField> objFieldList = (ArrayList<ObjField>) this.objFieldsByName.get(field);
         if (objFieldList == null)
         {
-            objFieldList = new ArrayList();
+            objFieldList = new ArrayList<ObjField>();
         }
         objFieldList.add(objField);
         this.objFieldsByName.put(field, objFieldList);
@@ -386,7 +380,7 @@ public class Finitization
      */
     public ObjSet createObjects(Class objClass, int numObjects)
     {
-        ArrayList objects = new ArrayList();
+        ArrayList<Object> objects = new ArrayList<Object>();
         try
         {
             for (int i = 0; i < numObjects; i++)
@@ -444,23 +438,19 @@ public class Finitization
         FieldDomain fieldDomain = new FieldDomain(classDomainIndices);
 
         // get the ObjFields that have been created for this field
-        List objFieldList = (ArrayList) this.objFieldsByName.get(field);
-        Iterator iterator = objFieldList.iterator();
-        while (iterator.hasNext())
+        List<ObjField> objFieldList = this.objFieldsByName.get(field);
+        for(ObjField objField : objFieldList)
         {
             // add each ObjField to the state space
-            ObjField objField = (ObjField) iterator.next();
-            //            this.space.put(objField, classDomainIndices);
             this.space.put(objField, fieldDomain);
         }
-
     }
 
     /**
      * @return All of the registered fields mapped to their field domains.
      * Key = <code>ObjField</code>, Value = <code>FieldDomain</code>
      */
-    public Map getSpace()
+    public Map<ObjField, FieldDomain> getSpace()
     {
         return this.space;
     }
@@ -487,13 +477,13 @@ public class Finitization
         {
             return new ObjField[0];
         }
-        return (ObjField[]) this.fieldOrdering.toArray(new ObjField[0]);
+        return this.fieldOrdering.toArray(new ObjField[0]);
     }
 
     /**
      * @return
      */
-    public List getFieldOrdering()
+    public List<ObjField> getFieldOrdering()
     {
         return this.fieldOrdering;
     }
@@ -506,12 +496,11 @@ public class Finitization
     {
         if (this.fieldOrderingCache == null)
         {
-            this.fieldOrderingCache = (ObjField[]) this.fieldOrdering.toArray(new ObjField[0]);
+            this.fieldOrderingCache = this.fieldOrdering.toArray(new ObjField[0]);
         }
         StringBuffer buf = new StringBuffer(64);
-        for (int i = 0; i < this.fieldOrderingCache.length; i++)
+        for(ObjField objField : this.fieldOrderingCache)
         {
-            ObjField objField = this.fieldOrderingCache[i];
             buf.append(objField).append("=").append(cv.get(objField)).append(", ");
         }
         return buf.toString();

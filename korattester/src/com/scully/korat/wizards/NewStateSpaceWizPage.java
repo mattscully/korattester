@@ -1,12 +1,8 @@
 package com.scully.korat.wizards;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -31,15 +27,15 @@ public class NewStateSpaceWizPage extends WizardPage
 {
     private Text containerText;
 
-    private Text fileText;
-    
     private Text baseClassText;
-    
+
+    private Text fileText;
+
     private Text repOkMethodText;
     
+    private Text sourceFolderText;
+
     private Text packageNameText;
-    
-    private Text fileNameText;
 
     private IType selection;
 
@@ -50,7 +46,7 @@ public class NewStateSpaceWizPage extends WizardPage
      */
     public NewStateSpaceWizPage(IType selection)
     {
-        super("objectPoolPage");
+        super("stateSpacePage");
         setTitle("Create State Space for " + selection.getFullyQualifiedName());
         setDescription("This wizard creates an XML file representing the selected object's state space.");
         this.selection = selection;
@@ -66,20 +62,15 @@ public class NewStateSpaceWizPage extends WizardPage
         container.setLayout(layout);
         layout.numColumns = 3;
         layout.verticalSpacing = 9;
-        Label label = new Label(container, SWT.NULL);
-        label.setText("&Base Class:");
+        
+        // add Base Class label
+        addLabel(container, "&Base Class:");
 
+        // add Base Class input field
         this.baseClassText = new Text(container, SWT.BORDER | SWT.SINGLE);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        this.baseClassText.setLayoutData(gd);
-        this.baseClassText.setEnabled(false);
-//        this.baseClassText.addModifyListener(new ModifyListener() {
-//            public void modifyText(ModifyEvent e)
-//            {
-//                dialogChanged();
-//            }
-//        });
+        addInputField(container, this.baseClassText, false, false);
 
+        // add Browse button for Base Class
         Button button = new Button(container, SWT.PUSH);
         button.setText("Browse...");
         button.addSelectionListener(new SelectionAdapter() {
@@ -88,21 +79,55 @@ public class NewStateSpaceWizPage extends WizardPage
                 handleBrowse();
             }
         });
-        label = new Label(container, SWT.NULL);
-        label.setText("&File name:");
+        
+        // add File Name
+        addLabel(container, "&File name:");
+        this.fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
+        addInputField(container, this.fileText, true, true).horizontalSpan = 2;
+        
+        // add RepOk
+        addLabel(container, "&RepOk Method:");
+        this.repOkMethodText = new Text(container, SWT.BORDER | SWT.SINGLE);
+        addInputField(container, this.repOkMethodText, true, true).horizontalSpan = 2;
+        
+        // add Source folder
+        addLabel(container, "Source fol&der:");
+        this.sourceFolderText = new Text(container, SWT.BORDER | SWT.SINGLE);
+        addInputField(container, this.sourceFolderText, true, true).horizontalSpan = 2;
+        
+        // add Package
+        addLabel(container, "&Package:");
+        this.packageNameText = new Text(container, SWT.BORDER | SWT.SINGLE);
+        addInputField(container, this.packageNameText, true, true).horizontalSpan = 2;
+        
 
-        fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        fileText.setLayoutData(gd);
-        fileText.addModifyListener(new ModifyListener() {
-            public void modifyText(ModifyEvent e)
-            {
-                dialogChanged();
-            }
-        });
         initialize();
         dialogChanged();
         setControl(container);
+    }
+    
+    private Label addLabel(Composite container, String text)
+    {
+        Label label = new Label(container, SWT.NULL);
+        label.setText(text);
+        return label;
+    }
+
+    private GridData addInputField(Composite container, Text text, boolean enabled, boolean handleModify)
+    {
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        text.setLayoutData(gd);
+        text.setEnabled(enabled);
+        if (handleModify)
+        {
+            text.addModifyListener(new ModifyListener() {
+                public void modifyText(ModifyEvent e)
+                {
+                    dialogChanged();
+                }
+            });
+        }
+        return gd;
     }
 
     public String getBaseClass()
@@ -116,24 +141,27 @@ public class NewStateSpaceWizPage extends WizardPage
 
     private void initialize()
     {
-//        if (selection != null && selection.isEmpty() == false && selection instanceof IStructuredSelection)
-//        {
-//            IStructuredSelection ssel = (IStructuredSelection) selection;
-//            if (ssel.size() > 1)
-//                return;
-//            Object obj = ssel.getFirstElement();
-//            if (obj instanceof IResource)
-//            {
-//                IContainer container;
-//                if (obj instanceof IContainer)
-//                    container = (IContainer) obj;
-//                else
-//                    container = ((IResource) obj).getParent();
-//                containerText.setText(container.getFullPath().toString());
-//            }
-//        }
+        //        if (selection != null && selection.isEmpty() == false && selection instanceof IStructuredSelection)
+        //        {
+        //            IStructuredSelection ssel = (IStructuredSelection) selection;
+        //            if (ssel.size() > 1)
+        //                return;
+        //            Object obj = ssel.getFirstElement();
+        //            if (obj instanceof IResource)
+        //            {
+        //                IContainer container;
+        //                if (obj instanceof IContainer)
+        //                    container = (IContainer) obj;
+        //                else
+        //                    container = ((IResource) obj).getParent();
+        //                containerText.setText(container.getFullPath().toString());
+        //            }
+        //        }
         this.baseClassText.setText(this.selection.getFullyQualifiedName());
         this.fileText.setText(this.selection.getElementName() + ".xml");
+        this.repOkMethodText.setText("repOk");
+        this.sourceFolderText.setText("src");
+        this.packageNameText.setText(this.selection.getPackageFragment().getElementName());
     }
 
     /**
@@ -161,44 +189,44 @@ public class NewStateSpaceWizPage extends WizardPage
 
     private void dialogChanged()
     {
-//        IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(getContainerName()));
-//        String fileName = getFileName();
-//
-//        if (getContainerName().length() == 0)
-//        {
-//            updateStatus("File container must be specified");
-//            return;
-//        }
-//        if (container == null || (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0)
-//        {
-//            updateStatus("File container must exist");
-//            return;
-//        }
-//        if (!container.isAccessible())
-//        {
-//            updateStatus("Project must be writable");
-//            return;
-//        }
-//        if (fileName.length() == 0)
-//        {
-//            updateStatus("File name must be specified");
-//            return;
-//        }
-//        if (fileName.replace('\\', '/').indexOf('/', 1) > 0)
-//        {
-//            updateStatus("File name must be valid");
-//            return;
-//        }
-//        int dotLoc = fileName.lastIndexOf('.');
-//        if (dotLoc != -1)
-//        {
-//            String ext = fileName.substring(dotLoc + 1);
-//            if (ext.equalsIgnoreCase("xml") == false)
-//            {
-//                updateStatus("File extension must be \"xml\"");
-//                return;
-//            }
-//        }
+        //        IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(getContainerName()));
+        //        String fileName = getFileName();
+        //
+        //        if (getContainerName().length() == 0)
+        //        {
+        //            updateStatus("File container must be specified");
+        //            return;
+        //        }
+        //        if (container == null || (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0)
+        //        {
+        //            updateStatus("File container must exist");
+        //            return;
+        //        }
+        //        if (!container.isAccessible())
+        //        {
+        //            updateStatus("Project must be writable");
+        //            return;
+        //        }
+        //        if (fileName.length() == 0)
+        //        {
+        //            updateStatus("File name must be specified");
+        //            return;
+        //        }
+        //        if (fileName.replace('\\', '/').indexOf('/', 1) > 0)
+        //        {
+        //            updateStatus("File name must be valid");
+        //            return;
+        //        }
+        //        int dotLoc = fileName.lastIndexOf('.');
+        //        if (dotLoc != -1)
+        //        {
+        //            String ext = fileName.substring(dotLoc + 1);
+        //            if (ext.equalsIgnoreCase("xml") == false)
+        //            {
+        //                updateStatus("File extension must be \"xml\"");
+        //                return;
+        //            }
+        //        }
         updateStatus(null);
     }
 
@@ -217,4 +245,4 @@ public class NewStateSpaceWizPage extends WizardPage
     {
         return fileText.getText();
     }
-}  //  @jve:decl-index=0:visual-constraint="105,83"
+} //  @jve:decl-index=0:visual-constraint="105,83"

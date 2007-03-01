@@ -50,20 +50,18 @@ public class Instrumenter
      */
     public void instrument() throws NotFoundException, CannotCompileException
     {
-        List workList = new ArrayList();
+        List<String> workList = new ArrayList<String>();
         workList.add(this.stateSpace.getRootClass());
         workList.addAll(this.getStateObjectNames());
-        for (Iterator iter = workList.iterator(); iter.hasNext();)
+        for(String className : workList)
         {
-            String className = (String) iter.next();
             CtClass cc = this.classPool.get(className);
             insertShadowFields(cc);
             insertObserver(cc);
             insertGettersSetters(cc);
         }
-        for (Iterator iter = workList.iterator(); iter.hasNext();)
+        for(String className : workList)
         {
-            String className = (String) iter.next();
             CtClass cc = this.classPool.get(className);
             instrumentFieldAccesses(cc);
             cc.toClass();
@@ -72,10 +70,10 @@ public class Instrumenter
 
     public void insertShadowFields(CtClass cc) throws CannotCompileException
     {
-        List fields = getFieldsForType(cc);
-        for (Iterator iter = fields.iterator(); iter.hasNext();)
+        List<StateFieldDTO> fields = getFieldsForType(cc);
+        for(StateFieldDTO fieldDTO : fields)
         {
-            String fieldName = ((StateFieldDTO) iter.next()).getName();
+            String fieldName = fieldDTO.getName();
             CtField field = CtField.make("int " + KORAT_PREFIX + fieldName + " = 0;", cc);
             cc.addField(field);
         }
@@ -103,8 +101,8 @@ public class Instrumenter
 
     public void insertGettersSetters(CtClass cc) throws NotFoundException, CannotCompileException
     {
-        List fieldNames = getFieldsForType(cc);
-        for (Iterator iter = fieldNames.iterator(); iter.hasNext();)
+        List<StateFieldDTO> fieldNames = getFieldsForType(cc);
+        for(StateFieldDTO field : fieldNames)
         {
             // getter
             //            public int $kor_getValue()
@@ -113,7 +111,6 @@ public class Instrumenter
             //                   this.$kor_observer.notify(this.$kor_value);
             //                return this.value;
             //            }
-            StateFieldDTO field = (StateFieldDTO) iter.next();
             String fieldName = field.getName();
             String shadowFieldName = KORAT_PREFIX + fieldName;
             String fieldType = field.getType();
@@ -244,9 +241,9 @@ public class Instrumenter
      * @param cc
      * @return
      */
-    List getFieldsForType(CtClass cc)
+    List<StateFieldDTO> getFieldsForType(CtClass cc)
     {
-        List fieldNames = new ArrayList();
+        List<StateFieldDTO> fieldNames = new ArrayList<StateFieldDTO>();
         List fields = this.stateSpace.getStateFields();
         String type = cc.getName();
         for (Iterator iter = fields.iterator(); iter.hasNext();)
@@ -260,9 +257,9 @@ public class Instrumenter
         return fieldNames;
     }
 
-    Collection getStateObjectNames()
+    Collection<String> getStateObjectNames()
     {
-        List objectNames = new ArrayList();
+        List<String> objectNames = new ArrayList<String>();
         for (Iterator iter = this.stateSpace.getStateObjects().iterator(); iter.hasNext();)
         {
             StateObjectDTO stateObject = (StateObjectDTO) iter.next();

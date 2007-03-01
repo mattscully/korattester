@@ -2,46 +2,39 @@ package com.scully.korat.test;
 
 
 import com.scully.korat.KoratClient;
-import com.scully.korat.finitization.*;
 import com.scully.korat.map.BeanXmlMapper;
-import com.scully.korat.map.StateFieldDTO;
-import com.scully.korat.map.StateObjectDTO;
 import com.scully.korat.map.StateSpaceBuilder;
 import com.scully.korat.map.TestStateSpaceDTO;
 
 public class SearchTree_remove {
     
-	public static Finitization finSearchTree (
-			int NUM_Node,
-			int MIN_size,
-			int MAX_size,
-			int MIN_Node_value,
-			int MAX_Node_value) {
-		// TODO: Verify Finitization Skeleton
-	    Finitization f = new Finitization(SearchTree.class);
-		// TODO: Update createObjects method with fully qualified name
-	    ObjSet nodes = f.createObjects("com.scully.korat.test.SearchTree$Node", NUM_Node);
-		nodes.add(null);
-		try
-        {
-			f.set(SearchTree.class.getDeclaredField("root"), nodes);
-			f.set(SearchTree.class.getDeclaredField("size"), new IntSet(MIN_size, MAX_size));
-			f.set(SearchTree.Node.class.getDeclaredField("right"), nodes);
-			f.set(SearchTree.Node.class.getDeclaredField("left"), nodes);
-            f.set(SearchTree.Node.class.getDeclaredField("value"), new IntSet(MIN_Node_value, MAX_Node_value));
-        }
-        catch (SecurityException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch (NoSuchFieldException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-		return f;
-	}
+//	public static Finitization finSearchTree (
+//			int NUM_Node,
+//			int MIN_size,
+//			int MAX_size,
+//			int MIN_Node_value,
+//			int MAX_Node_value) {
+//	    Finitization f = new Finitization(SearchTree.class);
+//	    ObjSet nodes = f.createObjects("com.scully.korat.test.SearchTree$Node", NUM_Node);
+//		nodes.add(null);
+//		try
+//        {
+//			f.set(SearchTree.class.getDeclaredField("root"), nodes);
+//			f.set(SearchTree.class.getDeclaredField("size"), new IntSet(MIN_size, MAX_size));
+//			f.set(SearchTree.Node.class.getDeclaredField("right"), nodes);
+//			f.set(SearchTree.Node.class.getDeclaredField("left"), nodes);
+//            f.set(SearchTree.Node.class.getDeclaredField("value"), new IntSet(MIN_Node_value, MAX_Node_value));
+//        }
+//        catch (SecurityException e)
+//        {
+//            e.printStackTrace();
+//        }
+//        catch (NoSuchFieldException e)
+//        {
+//            e.printStackTrace();
+//        }
+//		return f;
+//	}
     
     public static TestStateSpaceDTO createFiniteStateSpace (
             int NUM_Node,

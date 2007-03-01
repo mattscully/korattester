@@ -34,6 +34,8 @@ public class StateSpaceWizard extends Wizard implements INewWizard
 {
     private NewStateSpaceWizPage newStateSpaceWizPage;
     
+    private DefineObjPoolsPage defineObjPoolsPage;
+    
     private StateSpaceBuilder stateSpaceBuilder;
 
     private IType selection;
@@ -55,7 +57,9 @@ public class StateSpaceWizard extends Wizard implements INewWizard
     public void addPages()
     {
         newStateSpaceWizPage = new NewStateSpaceWizPage(selection);
+        defineObjPoolsPage = new DefineObjPoolsPage(selection);
         addPage(newStateSpaceWizPage);
+        addPage(defineObjPoolsPage);
     }
 
     /**

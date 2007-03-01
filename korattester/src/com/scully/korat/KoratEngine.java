@@ -8,7 +8,6 @@ import java.lang.reflect.Field;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -51,7 +50,7 @@ public class KoratEngine
     
     Finitization finitization;
 
-    private Map dtoMap;
+    private Map<String, ObjField> dtoMap;
 
     public KoratEngine(TestStateSpaceDTO stateSpace)
     {
@@ -61,7 +60,7 @@ public class KoratEngine
         this.candidateState = new CandidateState(finitization.getSpace(), finitization.getObjFields());
         this.observer = finitization.getObserver();
         this.backtrackedRoot = false;
-        this.dtoMap = new HashMap();
+        this.dtoMap = new HashMap<String, ObjField>();
     }
 
     /**
@@ -69,10 +68,10 @@ public class KoratEngine
      * 
      * @return List<CandidateStateDTO>
      */
-    public List findAllValidStates()
+    public List<CandidateStateDTO> findAllValidStates()
     {
-        List validStates = new ArrayList(); // Found CVs that are valid inputs
-        Stack accessedFieldsStack = new Stack();
+        List<CandidateStateDTO> validStates = new ArrayList<CandidateStateDTO>(); // Found CVs that are valid inputs
+        Stack<ObjField> accessedFieldsStack = new Stack<ObjField>();
         
         // set the observer up with values needed for observing the execution
         this.observer.setObservedFields(accessedFieldsStack);
@@ -108,9 +107,8 @@ public class KoratEngine
             {
                 // add all reachable fields not already in stack
                 ObjField[] reachableObjFields = getReachableObjFields(this.rootObject);
-                for (int i = 0; i < reachableObjFields.length; i++)
+                for (ObjField f : reachableObjFields)
                 {
-                    ObjField f = reachableObjFields[i];
                     if (!accessedFieldsStack.contains(f))
                     {
                         accessedFieldsStack.push(f);
@@ -121,7 +119,7 @@ public class KoratEngine
             while (!accessedFieldsStack.isEmpty())
             {
                 // field on the top of stack
-                ObjField topField = (ObjField) accessedFieldsStack.peek(); 
+                ObjField topField = accessedFieldsStack.peek(); 
 
                 if (ISOMORPHISM_BREAKING)
                 {
@@ -153,14 +151,14 @@ public class KoratEngine
      * @param topField
      * @param accessedFieldsStack
      */
-    private void skipIsomorphicCandidates(ObjField topField, Stack accessedFieldsStack)
+    private void skipIsomorphicCandidates(ObjField topField, Stack<ObjField> accessedFieldsStack)
     {
         // the max value index of all fields in the same field/class domain
         // excluding the topField of the stack.
         int maxFieldValueIndex = -1; // $m_f$ from the first Korat paper
 
         // a straightforward way to computer 'mf'
-        ObjField[] stackWithoutTop = (ObjField[]) accessedFieldsStack.toArray(new ObjField[0]);
+        ObjField[] stackWithoutTop = accessedFieldsStack.toArray(new ObjField[0]);
         // search the stack backwards to get the field right before this one
         // -- do "-2" to skip the top
         for (int i = stackWithoutTop.length - 2; i >= 0; i--)
@@ -214,16 +212,16 @@ public class KoratEngine
      */
     private ObjField[] getReachableObjFields(Object root)
     {
-        ArrayList objFields = new ArrayList();
+        ArrayList<ObjField> objFields = new ArrayList<ObjField>();
         addFieldsForObject(root, objFields);
-        return (ObjField[]) objFields.toArray(new ObjField[0]);
+        return objFields.toArray(new ObjField[0]);
     }
 
     /**
      * @param rootClass
      * @param objFields
      */
-    private void addFieldsForObject(Object rootObject, ArrayList objFields)
+    private void addFieldsForObject(Object rootObject, ArrayList<ObjField> objFields)
     {
         if (rootObject == null)
         {
@@ -231,9 +229,8 @@ public class KoratEngine
         }
         Class rootClass = rootObject.getClass();
         Field[] fields = rootClass.getDeclaredFields();
-        for (int i = 0; i < fields.length; i++)
+        for (Field field : fields)
         {
-            Field field = fields[i];
             // ignore JML instrumented fields
             if (field.getName().startsWith("rac$") || field.getName().startsWith("$kor_"))
             {
@@ -277,11 +274,11 @@ public class KoratEngine
      */
     public void setCandidateState(CandidateStateDTO candidateState)
     {
-        List fields = candidateState.getCandidateFields();
-        for (Iterator iter = fields.iterator(); iter.hasNext();)
+        List<CandidateFieldDTO> fields = candidateState.getCandidateFields();
+//        for (Iterator iter = fields.iterator(); iter.hasNext();)
+        for (CandidateFieldDTO field : fields)
         {
-            CandidateFieldDTO field = (CandidateFieldDTO) iter.next();
-            ObjField objField = (ObjField) this.dtoMap.get(field.getFieldId());
+            ObjField objField = this.dtoMap.get(field.getFieldId());
             if (objField == null)
             {
                 try
@@ -304,9 +301,8 @@ public class KoratEngine
     private ObjField getNextMatchingObjField(Class parentClass, String fieldName)
     {
         ObjField[] objFields = this.candidateState.getStateFields();
-        for (int i = 0; i < objFields.length; i++)
+        for(ObjField objField : objFields)
         {
-            ObjField objField = objFields[i];
             Class clazz = objField.getObject().getClass();
             if (clazz.equals(parentClass) && fieldName.equals(objField.getField().getName())
                     && !this.dtoMap.containsValue(objField))

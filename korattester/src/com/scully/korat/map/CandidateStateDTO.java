@@ -1,7 +1,6 @@
 package com.scully.korat.map;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -15,11 +14,11 @@ import com.scully.korat.finitization.ObjField;
 
 public class CandidateStateDTO
 {
-    List candidateFields;
+    List<CandidateFieldDTO> candidateFields;
 
     public CandidateStateDTO()
     {
-        this.candidateFields = new ArrayList();
+        this.candidateFields = new ArrayList<CandidateFieldDTO>();
     }
 
     /**
@@ -27,20 +26,21 @@ public class CandidateStateDTO
      * @param candidates
      *            List of Maps{ObjField, Integer}
      */
-    public CandidateStateDTO(Map candidateMap)
+    public CandidateStateDTO(Map<ObjField, Integer> candidateMap)
     {
         this();
         
-        for (Iterator fieldIter = candidateMap.keySet().iterator(); fieldIter.hasNext();)
+//        for (Iterator fieldIter = candidateMap.keySet().iterator(); fieldIter.hasNext();)
+        for(ObjField objField : candidateMap.keySet())
         {
-            ObjField objField = (ObjField) fieldIter.next();
+//            ObjField objField = (ObjField) fieldIter.next();
             CandidateFieldDTO candidateField = new CandidateFieldDTO();
             candidateField.setFieldName(objField.getField().getName());
             candidateField.setFieldId(ObjectUtils.identityToString(objField.getObject()) + "."
                     + candidateField.getFieldName());
             candidateField.setFieldType(objField.getField().getType().getName());
             candidateField.setParentType(objField.getObject().getClass().getName());
-            candidateField.setValueIndex((Integer) candidateMap.get(objField));
+            candidateField.setValueIndex(candidateMap.get(objField));
 //            candidateField.setValue(ObjectUtils.toString(objField.getFieldValue()));
             this.candidateFields.add(candidateField);
         }
@@ -64,9 +64,8 @@ public class CandidateStateDTO
     public String toString()
     {
         StringBuffer buf = new StringBuffer(100);
-        for (Iterator iter = this.candidateFields.iterator(); iter.hasNext();)
+        for(CandidateFieldDTO field : this.candidateFields)
         {
-            CandidateFieldDTO field = (CandidateFieldDTO) iter.next();
             buf.append(ClassUtils.getShortClassName(field.getParentType()) + "." + field.getFieldName() + "["
                     + field.getValueIndex() + "] | ");
 //                    + field.getValueIndex() + "](" + field.getValue() + ") | ");
@@ -77,7 +76,7 @@ public class CandidateStateDTO
     /**
      * @return the candidateFields
      */
-    public List getCandidateFields()
+    public List<CandidateFieldDTO> getCandidateFields()
     {
         return this.candidateFields;
     }
@@ -86,7 +85,7 @@ public class CandidateStateDTO
      * @param candidateFields
      *            the candidateFields to set
      */
-    public void setCandidateFields(List candidateFields)
+    public void setCandidateFields(List<CandidateFieldDTO> candidateFields)
     {
         this.candidateFields = candidateFields;
     }

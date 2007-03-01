@@ -24,7 +24,7 @@ public class Predicate
     {
         try
         {
-            repOk = rootClass.getDeclaredMethod(methodName, null);
+            repOk = rootClass.getDeclaredMethod(methodName);
             repOk.setAccessible(true);
         }
         catch (SecurityException e)
@@ -42,7 +42,7 @@ public class Predicate
           Boolean booleanObj = null;
         try
         {
-            booleanObj = (Boolean) repOk.invoke(rootObject, null);
+            booleanObj = (Boolean) repOk.invoke(rootObject);
         }
         catch (IllegalArgumentException e)
         {

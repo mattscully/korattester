@@ -8,7 +8,6 @@ package com.scully.korat;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.List;
 
 import com.scully.korat.finitization.Predicate;
@@ -31,7 +30,7 @@ public class KoratClient
     public static void populateTestCandidates(TestStateSpaceDTO stateSpace)
     {
         KoratEngine korat = new KoratEngine(stateSpace);
-        List validStates = korat.findAllValidStates();
+        List<CandidateStateDTO> validStates = korat.findAllValidStates();
         stateSpace.setCandidateStates(validStates);
         System.out.println("Generated " + validStates.size() + " valid states.");
     }
@@ -40,18 +39,17 @@ public class KoratClient
             Object[] paramValues)
     {
         KoratEngine korat = new KoratEngine(stateSpace);
-        List candidateStates = stateSpace.getCandidateStates();
+        List<CandidateStateDTO> candidateStates = stateSpace.getCandidateStates();
 
         // get the test Method object
         Method method = getTestMethod(korat.getRootObject().getClass(), testMethod, paramTypes);
 
         int count = 0;
-        for (Iterator iter = candidateStates.iterator(); iter.hasNext(); count++)
+        for(CandidateStateDTO candidateState : candidateStates)
         {
-            CandidateStateDTO candidateState = (CandidateStateDTO) iter.next();
             // initialize the root object
             korat.setCandidateState(candidateState);
-	        System.out.println("[" + count + "] = " + candidateState);
+            System.out.printf("[%d] = %s%n", count, candidateState);
             testCandidate(korat.getRootObject(), method, paramValues);
         }
     }

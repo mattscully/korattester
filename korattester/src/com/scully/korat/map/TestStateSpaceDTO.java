@@ -18,17 +18,17 @@ public class TestStateSpaceDTO
     
     String repOk;
 
-    List stateObjects;
+    List<StateObjectDTO> stateObjects;
 
-    List stateFields;
+    List<StateFieldDTO> stateFields;
 
-    List candidateStates;
+    List<CandidateStateDTO> candidateStates;
 
     public TestStateSpaceDTO()
     {
-        this.stateObjects = new ArrayList();
-        this.stateFields = new ArrayList();
-        this.candidateStates = new ArrayList();
+        this.stateObjects = new ArrayList<StateObjectDTO>();
+        this.stateFields = new ArrayList<StateFieldDTO>();
+        this.candidateStates = new ArrayList<CandidateStateDTO>();
     }
 
     public void addStateObject(StateObjectDTO stateObjectDTO)
@@ -75,7 +75,7 @@ public class TestStateSpaceDTO
     /**
      * @return the candidateStates
      */
-    public List getCandidateStates()
+    public List<CandidateStateDTO> getCandidateStates()
     {
         return candidateStates;
     }
@@ -83,7 +83,7 @@ public class TestStateSpaceDTO
     /**
      * @param candidateStates the candidateStates to set
      */
-    public void setCandidateStates(List candidateStates)
+    public void setCandidateStates(List<CandidateStateDTO> candidateStates)
     {
         this.candidateStates = candidateStates;
     }
@@ -91,7 +91,7 @@ public class TestStateSpaceDTO
     /**
      * @return the stateFields
      */
-    public List getStateFields()
+    public List<StateFieldDTO> getStateFields()
     {
         return stateFields;
     }
@@ -99,7 +99,7 @@ public class TestStateSpaceDTO
     /**
      * @param stateFields the stateFields to set
      */
-    public void setStateFields(List stateFields)
+    public void setStateFields(List<StateFieldDTO> stateFields)
     {
         this.stateFields = stateFields;
     }
@@ -107,7 +107,7 @@ public class TestStateSpaceDTO
     /**
      * @return the stateObjects
      */
-    public List getStateObjects()
+    public List<StateObjectDTO> getStateObjects()
     {
         return stateObjects;
     }
@@ -115,7 +115,7 @@ public class TestStateSpaceDTO
     /**
      * @param stateObjects the stateObjects to set
      */
-    public void setStateObjects(List stateObjects)
+    public void setStateObjects(List<StateObjectDTO> stateObjects)
     {
         this.stateObjects = stateObjects;
     }

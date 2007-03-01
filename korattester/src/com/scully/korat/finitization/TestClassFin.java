@@ -1,7 +1,5 @@
 package com.scully.korat.finitization;
 
-import com.scully.korat.KoratEngine;
-
 public class TestClassFin {
 
 	public static Finitization finTestClass (
