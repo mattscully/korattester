@@ -1,38 +1,34 @@
 package com.scully.korat.wizards;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import com.scully.korat.map.StateFieldDTO;
+
 public class DefineNativeFieldRangesPage extends WizardPage
 {
-    private IType selection;
+    private WizTypeInfo wizTypeInfo;
     
-    private Set<String> types = new HashSet<String>();
+	private Map<String, Text> fieldRangeMinMap = new HashMap<String, Text>();
     
-	private Map<String, Text> objPoolSizeTextsMap = new HashMap<String, Text>();
-    
-	private Map<String, Button> objPoolNullableCheckboxMap = new HashMap<String, Button>();
+	private Map<String, Text> fieldRangeMaxMap = new HashMap<String, Text>();
 
-    public DefineNativeFieldRangesPage(IType selection)
+    public DefineNativeFieldRangesPage(WizTypeInfo wizTypeInfo)
     {
-        super("objectPoolPage");
-        setTitle("Define Object Pools for State Space");
+        super("primitiveFieldRangesPage");
+        this.wizTypeInfo = wizTypeInfo;
+        setTitle("Define Primitive Field Ranges for State Space");
         setDescription("This wizard creates an XML file representing the selected object's state space.");
-        this.selection = selection;
     }
 
     /**
@@ -40,36 +36,38 @@ public class DefineNativeFieldRangesPage extends WizardPage
      */
     public void createControl(Composite parent)
     {
-        try
-        {
-            collectTypes(this.selection.getTypes());
-        }
-        catch (JavaModelException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
         Composite container = new Composite(parent, SWT.NULL);
         GridLayout layout = new GridLayout();
         container.setLayout(layout);
-        layout.numColumns = 3;
+        layout.numColumns = 5;
         layout.verticalSpacing = 9;
         
-        for (String type : types)
+        Map<String, List<StateFieldDTO>> primitiveFields = this.wizTypeInfo.getPrimitiveFields();
+        
+        for (String parentType : primitiveFields.keySet())
         {
-	        // add label
-	        addLabel(container, type + ":");
+	        // add parent type label
+	        addLabel(container, parentType).horizontalSpan = 5;
             
-            Text size = new Text(container, SWT.BORDER | SWT.SINGLE);
-            size.setText("3");
-            addInputField(container, size, true);
-            this.objPoolSizeTextsMap.put(type, size);
-            
-            Button isNullable = new Button(container, SWT.CHECK);
-            isNullable.setText("Nullable");
-            isNullable.setSelection(true);
-            this.objPoolNullableCheckboxMap.put(type, isNullable);
+            for(StateFieldDTO field : primitiveFields.get(parentType))
+            {
+	            // add field name/type label
+	            addLabel(container, field.getName() + "  (" + field.getType() + ")");
+                
+                // add min
+                addLabel(container, "min:").horizontalAlignment = SWT.RIGHT;
+                Text text = new Text(container, SWT.BORDER | SWT.SINGLE);
+                text.setText("0");
+                addInputField(container, text, true);
+                this.fieldRangeMinMap.put(getFieldKey(field), text);
+                
+                // add max
+                addLabel(container, "max:").horizontalAlignment = SWT.RIGHT;
+                text = new Text(container, SWT.BORDER | SWT.SINGLE);
+                text.setText("3");
+                addInputField(container, text, true);
+                this.fieldRangeMaxMap.put(getFieldKey(field), text);
+            }
         }
 
 
@@ -77,33 +75,29 @@ public class DefineNativeFieldRangesPage extends WizardPage
         //        dialogChanged();
         setControl(container);
     }
-
-    /**
-     * Recursively get a set of all unique object types within types
-     * @param fieldTypes
-     * @param typesSet
-     * @throws JavaModelException
-     */
-    private void collectTypes(IType[] fieldTypes) throws JavaModelException
+    
+    public int getFieldMin(StateFieldDTO field)
     {
-        if (fieldTypes != null)
-        {
-            for (IType childType : fieldTypes)
-            {
-                if (!this.types.contains(childType))
-                {
-                    this.types.add(childType.getFullyQualifiedName());
-                    collectTypes(childType.getTypes());
-                }
-            }
-        }
+        return Integer.parseInt(this.fieldRangeMinMap.get(getFieldKey(field)).getText());
+    }
+    
+    public int getFieldMax(StateFieldDTO field)
+    {
+        return Integer.parseInt(this.fieldRangeMaxMap.get(getFieldKey(field)).getText());
+    }
+    
+    private String getFieldKey(StateFieldDTO field)
+    {
+        return field.getParentClass() + "." + field.getName();
     }
 
-    private Label addLabel(Composite container, String text)
+    private GridData addLabel(Composite container, String text)
     {
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         Label label = new Label(container, SWT.NULL);
         label.setText(text);
-        return label;
+        label.setLayoutData(gd);
+        return gd;
     }
 
     private GridData addInputField(Composite container, Text text, boolean enabled)

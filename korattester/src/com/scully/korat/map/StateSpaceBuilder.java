@@ -8,7 +8,7 @@ public class StateSpaceBuilder
     {
         this.stateSpace = new TestStateSpaceDTO();
     }
-    
+
     public TestStateSpaceDTO getStateSpace()
     {
         return this.stateSpace;
@@ -55,4 +55,11 @@ public class StateSpaceBuilder
         this.stateSpace.addStateField(stateField);
     }
 
+    public void addStateField(StateFieldDTO stateField)
+    {
+        if (stateField != null)
+        {
+            this.stateSpace.addStateField(stateField);
+        }
+    }
 }

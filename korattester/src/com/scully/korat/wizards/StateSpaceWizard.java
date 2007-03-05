@@ -1,22 +1,37 @@
 package com.scully.korat.wizards;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.core.runtime.*;
-import org.eclipse.jface.operation.*;
-import java.lang.reflect.InvocationTargetException;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
-import java.io.*;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWizard;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
+import com.scully.korat.KoratClient;
 import com.scully.korat.map.BeanXmlMapper;
+import com.scully.korat.map.StateFieldDTO;
 import com.scully.korat.map.StateSpaceBuilder;
 
 /**
@@ -33,12 +48,16 @@ import com.scully.korat.map.StateSpaceBuilder;
 public class StateSpaceWizard extends Wizard implements INewWizard
 {
     private NewStateSpaceWizPage newStateSpaceWizPage;
-    
+
     private DefineObjPoolsPage defineObjPoolsPage;
-    
+
+    private DefineNativeFieldRangesPage defineNativeFieldRangesPage;
+
     private StateSpaceBuilder stateSpaceBuilder;
 
     private IType selection;
+
+    private WizTypeInfo wizTypeInfo;
 
     /**
      * Constructor for StateSpaceWizard.
@@ -56,10 +75,13 @@ public class StateSpaceWizard extends Wizard implements INewWizard
 
     public void addPages()
     {
-        newStateSpaceWizPage = new NewStateSpaceWizPage(selection);
-        defineObjPoolsPage = new DefineObjPoolsPage(selection);
-        addPage(newStateSpaceWizPage);
-        addPage(defineObjPoolsPage);
+        this.wizTypeInfo = new WizTypeInfo(this.selection);
+        this.newStateSpaceWizPage = new NewStateSpaceWizPage(this.wizTypeInfo);
+        this.defineObjPoolsPage = new DefineObjPoolsPage(this.wizTypeInfo);
+        this.defineNativeFieldRangesPage = new DefineNativeFieldRangesPage(this.wizTypeInfo);
+        addPage(this.newStateSpaceWizPage);
+        addPage(this.defineObjPoolsPage);
+        addPage(this.defineNativeFieldRangesPage);
     }
 
     /**
@@ -69,8 +91,9 @@ public class StateSpaceWizard extends Wizard implements INewWizard
      */
     public boolean performFinish()
     {
-        final String containerName = newStateSpaceWizPage.getContainerName();
+        final String containerName = newStateSpaceWizPage.getSourceFolder();
         final String fileName = newStateSpaceWizPage.getFileName();
+        collectPageData();
         IRunnableWithProgress op = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException
             {
@@ -157,12 +180,47 @@ public class StateSpaceWizard extends Wizard implements INewWizard
         monitor.worked(1);
     }
 
+    private void collectPageData()
+    {
+        // set the root
+        this.stateSpaceBuilder.setRootClass(this.newStateSpaceWizPage.getBaseClass());
+
+        // ==> create StateObjects
+        for (String usedType : this.wizTypeInfo.getUsedTypes())
+        {
+            this.stateSpaceBuilder.addStateObject(usedType, this.defineObjPoolsPage.getObjectPoolSize(usedType),
+                    this.defineObjPoolsPage.isNullable(usedType));
+        }
+
+        // ==> create StateFields
+        for (List<StateFieldDTO> fields : this.wizTypeInfo.getPrimitiveFields().values())
+        {
+            for (StateFieldDTO field : fields)
+            {
+                field.setMin(this.defineNativeFieldRangesPage.getFieldMin(field));
+                field.setMax(this.defineNativeFieldRangesPage.getFieldMax(field));
+                this.stateSpaceBuilder.addStateField(field);
+            }
+        }
+        
+        // ==> set repOk
+        this.stateSpaceBuilder.setRepOk(this.newStateSpaceWizPage.getRepOkMethod());
+    }
+
     /**
      * We will initialize file contents with a sample text.
      */
-
     private InputStream openContentStream()
     {
+        try
+        {
+            
+        KoratClient.populateTestCandidates(this.stateSpaceBuilder.getStateSpace());
+        }
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
         String contents = BeanXmlMapper.beanToXml(this.stateSpaceBuilder.getStateSpace());
         return new ByteArrayInputStream(contents.getBytes());
     }
@@ -183,7 +241,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
         Object firstObj = selection.getFirstElement();
         if (firstObj instanceof IType)
         {
-	        this.selection = (IType) firstObj;
+            this.selection = (IType) firstObj;
         }
     }
 }

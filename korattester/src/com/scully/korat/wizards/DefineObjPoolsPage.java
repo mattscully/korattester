@@ -1,12 +1,9 @@
 package com.scully.korat.wizards;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -19,20 +16,18 @@ import org.eclipse.swt.widgets.Text;
 
 public class DefineObjPoolsPage extends WizardPage
 {
-    private IType selection;
-    
-    private Set<String> types = new HashSet<String>();
+    private WizTypeInfo wizTypeInfo;
     
 	private Map<String, Text> objPoolSizeTextsMap = new HashMap<String, Text>();
     
 	private Map<String, Button> objPoolNullableCheckboxMap = new HashMap<String, Button>();
 
-    public DefineObjPoolsPage(IType selection)
+    public DefineObjPoolsPage(WizTypeInfo wizTypeInfo)
     {
         super("objectPoolPage");
+        this.wizTypeInfo = wizTypeInfo;
         setTitle("Define Object Pools for State Space");
         setDescription("This wizard creates an XML file representing the selected object's state space.");
-        this.selection = selection;
     }
 
     /**
@@ -40,21 +35,13 @@ public class DefineObjPoolsPage extends WizardPage
      */
     public void createControl(Composite parent)
     {
-        try
-        {
-            collectTypes(this.selection.getTypes());
-        }
-        catch (JavaModelException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
         Composite container = new Composite(parent, SWT.NULL);
         GridLayout layout = new GridLayout();
         container.setLayout(layout);
         layout.numColumns = 3;
         layout.verticalSpacing = 9;
+        
+        Set<String> types = this.wizTypeInfo.getUsedTypes();
         
         for (String type : types)
         {
@@ -77,26 +64,15 @@ public class DefineObjPoolsPage extends WizardPage
         //        dialogChanged();
         setControl(container);
     }
-
-    /**
-     * Recursively get a set of all unique object types within types
-     * @param fieldTypes
-     * @param typesSet
-     * @throws JavaModelException
-     */
-    private void collectTypes(IType[] fieldTypes) throws JavaModelException
+    
+    public int getObjectPoolSize(String objectName)
     {
-        if (fieldTypes != null)
-        {
-            for (IType childType : fieldTypes)
-            {
-                if (!this.types.contains(childType))
-                {
-                    this.types.add(childType.getFullyQualifiedName());
-                    collectTypes(childType.getTypes());
-                }
-            }
-        }
+        return Integer.parseInt(this.objPoolSizeTextsMap.get(objectName).getText());
+    }
+    
+    public boolean isNullable(String objectName)
+    {
+        return this.objPoolNullableCheckboxMap.get(objectName).getSelection();
     }
 
     private Label addLabel(Composite container, String text)

@@ -25,31 +25,31 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 
 public class NewStateSpaceWizPage extends WizardPage
 {
-    private Text containerText;
+    //    private Text containerText;
 
     private Text baseClassText;
 
     private Text fileText;
 
     private Text repOkMethodText;
-    
+
     private Text sourceFolderText;
 
     private Text packageNameText;
 
-    private IType selection;
+    private WizTypeInfo wizTypeInfo;
 
     /**
      * Constructor for SampleNewWizardPage.
      * 
      * @param pageName
      */
-    public NewStateSpaceWizPage(IType selection)
+    public NewStateSpaceWizPage(WizTypeInfo wizTypeInfo)
     {
         super("stateSpacePage");
-        setTitle("Create State Space for " + selection.getFullyQualifiedName());
+        this.wizTypeInfo = wizTypeInfo;
+        setTitle("Create State Space for " + this.wizTypeInfo.getType().getFullyQualifiedName());
         setDescription("This wizard creates an XML file representing the selected object's state space.");
-        this.selection = selection;
     }
 
     /**
@@ -62,7 +62,7 @@ public class NewStateSpaceWizPage extends WizardPage
         container.setLayout(layout);
         layout.numColumns = 3;
         layout.verticalSpacing = 9;
-        
+
         // add Base Class label
         addLabel(container, "&Base Class:");
 
@@ -79,33 +79,32 @@ public class NewStateSpaceWizPage extends WizardPage
                 handleBrowse();
             }
         });
-        
+
         // add File Name
         addLabel(container, "&File name:");
         this.fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
         addInputField(container, this.fileText, true, true).horizontalSpan = 2;
-        
+
         // add RepOk
         addLabel(container, "&RepOk Method:");
         this.repOkMethodText = new Text(container, SWT.BORDER | SWT.SINGLE);
         addInputField(container, this.repOkMethodText, true, true).horizontalSpan = 2;
-        
+
         // add Source folder
         addLabel(container, "Source fol&der:");
         this.sourceFolderText = new Text(container, SWT.BORDER | SWT.SINGLE);
         addInputField(container, this.sourceFolderText, true, true).horizontalSpan = 2;
-        
+
         // add Package
         addLabel(container, "&Package:");
         this.packageNameText = new Text(container, SWT.BORDER | SWT.SINGLE);
         addInputField(container, this.packageNameText, true, true).horizontalSpan = 2;
-        
 
         initialize();
         dialogChanged();
         setControl(container);
     }
-    
+
     private Label addLabel(Composite container, String text)
     {
         Label label = new Label(container, SWT.NULL);
@@ -130,11 +129,6 @@ public class NewStateSpaceWizPage extends WizardPage
         return gd;
     }
 
-    public String getBaseClass()
-    {
-        return this.baseClassText.getText();
-    }
-
     /**
      * Tests if the current workbench selection is a suitable container to use.
      */
@@ -157,11 +151,11 @@ public class NewStateSpaceWizPage extends WizardPage
         //                containerText.setText(container.getFullPath().toString());
         //            }
         //        }
-        this.baseClassText.setText(this.selection.getFullyQualifiedName());
-        this.fileText.setText(this.selection.getElementName() + ".xml");
+        this.baseClassText.setText(this.wizTypeInfo.getType().getFullyQualifiedName());
+        this.fileText.setText(this.wizTypeInfo.getType().getElementName() + ".xml");
         this.repOkMethodText.setText("repOk");
         this.sourceFolderText.setText("src");
-        this.packageNameText.setText(this.selection.getPackageFragment().getElementName());
+        this.packageNameText.setText(this.wizTypeInfo.getType().getPackageFragment().getElementName());
     }
 
     /**
@@ -178,7 +172,7 @@ public class NewStateSpaceWizPage extends WizardPage
             Object[] result = dialog.getResult();
             if (result.length == 1)
             {
-                containerText.setText(((Path) result[0]).toString());
+                this.sourceFolderText.setText(((Path) result[0]).toString());
             }
         }
     }
@@ -236,13 +230,48 @@ public class NewStateSpaceWizPage extends WizardPage
         setPageComplete(message == null);
     }
 
-    public String getContainerName()
-    {
-        return containerText.getText();
-    }
-
     public String getFileName()
     {
         return fileText.getText();
+    }
+
+    /**
+     * @return the baseClass
+     */
+    public String getBaseClass()
+    {
+        return baseClassText.getText();
+    }
+
+    /**
+     * @return the file
+     */
+    public String getFile()
+    {
+        return fileText.getText();
+    }
+
+    /**
+     * @return the packageName
+     */
+    public String getPackageName()
+    {
+        return packageNameText.getText();
+    }
+
+    /**
+     * @return the repOkMethod
+     */
+    public String getRepOkMethod()
+    {
+        return repOkMethodText.getText();
+    }
+
+    /**
+     * @return the sourceFolder
+     */
+    public String getSourceFolder()
+    {
+        return sourceFolderText.getText();
     }
 } //  @jve:decl-index=0:visual-constraint="105,83"
