@@ -5,21 +5,23 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-
-import com.scully.korat.map.StateFieldDTO;
-import com.scully.korat.map.StateObjectDTO;
-import com.scully.korat.map.TestStateSpaceDTO;
-
 import javassist.CannotCompileException;
+import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
+import javassist.Loader;
 import javassist.NotFoundException;
 import javassist.expr.ExprEditor;
 import javassist.expr.FieldAccess;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.scully.korat.map.StateFieldDTO;
+import com.scully.korat.map.StateObjectDTO;
+import com.scully.korat.map.TestStateSpaceDTO;
 
 public class Instrumenter
 {
@@ -29,10 +31,32 @@ public class Instrumenter
 
     ClassPool classPool;
 
-    public Instrumenter(TestStateSpaceDTO stateSpace)
+    Loader loader;
+
+    public Instrumenter(TestStateSpaceDTO stateSpace, String[] extraClasspath)
     {
         this.stateSpace = stateSpace;
         this.classPool = ClassPool.getDefault();
+        // Append the current classpath of the JVM
+        // This is needed to find the korat classes (IKoratObservable, etc...)
+        this.classPool.appendClassPath(new ClassClassPath(this.getClass()));
+        // append extra classpath
+        if (extraClasspath != null)
+        {
+            for (String path : extraClasspath)
+            {
+                try
+                {
+                    this.classPool.appendClassPath(path);
+                }
+                catch (NotFoundException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        this.loader = new Loader(this.getClass().getClassLoader(), this.classPool);
     }
 
     /**
@@ -53,25 +77,58 @@ public class Instrumenter
         List<String> workList = new ArrayList<String>();
         workList.add(this.stateSpace.getRootClass());
         workList.addAll(this.getStateObjectNames());
-        for(String className : workList)
+        for (String className : workList)
         {
             CtClass cc = this.classPool.get(className);
+            if (cc.isFrozen())
+            {
+                cc.defrost();
+            }
             insertShadowFields(cc);
             insertObserver(cc);
             insertGettersSetters(cc);
         }
-        for(String className : workList)
+        for (String className : workList)
         {
             CtClass cc = this.classPool.get(className);
             instrumentFieldAccesses(cc);
-            cc.toClass();
+            Class clazz = cc.toClass(this.loader, this.getClass().getProtectionDomain());
+            clazz = null;
         }
+    }
+
+    public Class lookup(String className) throws ClassNotFoundException
+    {
+//        Class clazz = null;
+//        try
+//        {
+//            clazz = this.classPool.get(className).toClass(this.loader, null);
+//        }
+//        catch (CannotCompileException e)
+//        {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//            throw new ClassNotFoundException(className, e);
+//        }
+//        catch (NotFoundException e)
+//        {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//            throw new ClassNotFoundException(className, e);
+//        }
+//        if (clazz == null)
+//        {
+//	        throw new ClassNotFoundException(className);
+//        }
+//        return clazz;
+////        cc.toClass(this.loader, null);
+        return this.loader.loadClass(className);
     }
 
     public void insertShadowFields(CtClass cc) throws CannotCompileException
     {
         List<StateFieldDTO> fields = getFieldsForType(cc);
-        for(StateFieldDTO fieldDTO : fields)
+        for (StateFieldDTO fieldDTO : fields)
         {
             String fieldName = fieldDTO.getName();
             CtField field = CtField.make("int " + KORAT_PREFIX + fieldName + " = 0;", cc);
@@ -102,7 +159,7 @@ public class Instrumenter
     public void insertGettersSetters(CtClass cc) throws NotFoundException, CannotCompileException
     {
         List<StateFieldDTO> fieldNames = getFieldsForType(cc);
-        for(StateFieldDTO field : fieldNames)
+        for (StateFieldDTO field : fieldNames)
         {
             // getter
             //            public int $kor_getValue()

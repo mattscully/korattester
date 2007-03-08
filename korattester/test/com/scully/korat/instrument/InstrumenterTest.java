@@ -24,7 +24,7 @@ public class InstrumenterTest extends TestCase
     {
         super.setUp();
         this.stateSpace = KoratBaseTest.createFiniteStateSpace(3);
-        this.instrumenter = new Instrumenter(this.stateSpace);
+        this.instrumenter = new Instrumenter(this.stateSpace, null);
         ClassPool pool = new ClassPool(true);
         this.classLoader = new Loader(pool);
         this.ctRootClass = pool.get(this.stateSpace.getRootClass());

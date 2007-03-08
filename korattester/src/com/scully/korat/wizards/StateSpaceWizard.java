@@ -4,19 +4,24 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -202,7 +207,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
                 this.stateSpaceBuilder.addStateField(field);
             }
         }
-        
+
         // ==> set repOk
         this.stateSpaceBuilder.setRepOk(this.newStateSpaceWizPage.getRepOkMethod());
     }
@@ -214,15 +219,65 @@ public class StateSpaceWizard extends Wizard implements INewWizard
     {
         try
         {
-            
-        KoratClient.populateTestCandidates(this.stateSpaceBuilder.getStateSpace());
+            List<String> classpath = new ArrayList<String>();
+            try
+            {
+//                IClasspathEntry[] cp = this.selection.getJavaProject().getResolvedClasspath(true);
+//                //	            String prefix = this.selection.getJavaProject()
+                IPath workspaceLocation = this.selection.getJavaProject().getProject().getWorkspace().getRoot()
+                        .getLocation();
+//
+                String fullPath = null;
+//                for (IClasspathEntry entry : cp)
+//                {
+//                    IPath path = entry.getPath();
+//                    fullPath = getFullPath(workspaceLocation, path);
+//                    if (fullPath != null)
+//                    {
+//                        classpath.add(fullPath);
+//                    }
+//                }
+                IPath path = this.selection.getJavaProject().getOutputLocation();
+                fullPath = getFullPath(workspaceLocation, path);
+                if (fullPath != null)
+                    classpath.add(fullPath);
+            }
+            catch (JavaModelException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            String[] codeClasspath = null;
+            if (!classpath.isEmpty())
+            {
+                codeClasspath = classpath.toArray(new String[] {});
+            }
+
+            KoratClient.populateTestCandidates(this.stateSpaceBuilder.getStateSpace(), codeClasspath);
         }
-        catch(NullPointerException e)
+        catch (NullPointerException e)
         {
             e.printStackTrace();
         }
         String contents = BeanXmlMapper.beanToXml(this.stateSpaceBuilder.getStateSpace());
         return new ByteArrayInputStream(contents.getBytes());
+    }
+
+    private String getFullPath(IPath workspaceLoc, IPath path)
+    {
+        String fullPath = null;
+        if (path != null)
+        {
+            if (path.getDevice() != null || workspaceLoc.isPrefixOf(path))
+            {
+                fullPath = path.makeAbsolute().toString();
+            }
+            else
+            {
+                fullPath = workspaceLoc.toString() + path.makeAbsolute().toString();
+            }
+        }
+        return fullPath;
     }
 
     private void throwCoreException(String message) throws CoreException

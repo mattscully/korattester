@@ -154,7 +154,7 @@ public class NewStateSpaceWizPage extends WizardPage
         this.baseClassText.setText(this.wizTypeInfo.getType().getFullyQualifiedName());
         this.fileText.setText(this.wizTypeInfo.getType().getElementName() + ".xml");
         this.repOkMethodText.setText("repOk");
-        this.sourceFolderText.setText("src");
+        this.sourceFolderText.setText("/TestKoratPlugin/src");
         this.packageNameText.setText(this.wizTypeInfo.getType().getPackageFragment().getElementName());
     }
 

@@ -54,7 +54,12 @@ public class KoratEngine
 
     public KoratEngine(TestStateSpaceDTO stateSpace)
     {
-        this.finitization = new Finitization(stateSpace, PRUNING);
+        this(stateSpace, null);
+    }
+    
+    public KoratEngine(TestStateSpaceDTO stateSpace, String[] codeClasspath)
+    {
+        this.finitization = new Finitization(stateSpace, codeClasspath, PRUNING);
         this.predicate = new Predicate(finitization.getRootClass(), Predicate.REPOK);
         this.rootObject = finitization.getRootObject();
         this.candidateState = new CandidateState(finitization.getSpace(), finitization.getObjFields());

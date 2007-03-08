@@ -29,7 +29,11 @@ public class KoratClient
      */
     public static void populateTestCandidates(TestStateSpaceDTO stateSpace)
     {
-        KoratEngine korat = new KoratEngine(stateSpace);
+	    populateTestCandidates(stateSpace, null);
+    }
+    public static void populateTestCandidates(TestStateSpaceDTO stateSpace, String[] codeClasspath)
+    {
+        KoratEngine korat = new KoratEngine(stateSpace, codeClasspath);
         List<CandidateStateDTO> validStates = korat.findAllValidStates();
         stateSpace.setCandidateStates(validStates);
         System.out.println("Generated " + validStates.size() + " valid states.");

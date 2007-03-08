@@ -10,16 +10,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javassist.CannotCompileException;
+import javassist.NotFoundException;
+
 import com.scully.korat.IKoratObservable;
 import com.scully.korat.KoratObserver;
 import com.scully.korat.instrument.Instrumenter;
 import com.scully.korat.map.StateFieldDTO;
 import com.scully.korat.map.StateObjectDTO;
 import com.scully.korat.map.TestStateSpaceDTO;
-
-import javassist.CannotCompileException;
-import javassist.NotFoundException;
-
 
 /**
  * This class sets the bounds for the state space.  
@@ -51,6 +50,10 @@ public class Finitization
     ObjField[] fieldOrderingCache = null;
 
     KoratObserver observer = null;
+
+    //    ClassLoader koratLoader = null;
+
+    Instrumenter instrumenter;
 
     private boolean instrument;
 
@@ -86,38 +89,60 @@ public class Finitization
 
     public Finitization(TestStateSpaceDTO testStateSpaceDTO)
     {
-        this(testStateSpaceDTO, true);
+        this(testStateSpaceDTO, null, true);
     }
 
     /**
      * Completely initialize this Finitization object from a testStateSpaceDTO.
      * @param testStateSpaceDTO
      */
-    public Finitization(TestStateSpaceDTO testStateSpaceDTO, boolean instrument)
+    public Finitization(TestStateSpaceDTO testStateSpaceDTO, String[] codeClasspath, boolean instrument)
     {
         try
         {
             // create root object for state space
-            this.observer = new KoratObserver();
             this.instrument = instrument;
-            
+
             if (instrument)
             {
+                //                // create the class loader
+                //                if (codeClasspath != null && codeClasspath.length > 0)
+                //                {
+                //                    try
+                //                    {
+                //                        List<URL> paths = new ArrayList<URL>();
+                //                        for (String path : codeClasspath)
+                //                        {
+                //                            paths.add(new File(path).toURL());
+                //                        }
+                //                        URL[] classpathURLs = paths.toArray(new URL[]{});
+                //                        this.koratLoader = new URLClassLoader(classpathURLs, this.getClass().getClassLoader());
+                //                    }
+                //                    catch (MalformedURLException e)
+                //                    {
+                //                        // TODO Auto-generated catch block
+                //                        e.printStackTrace();
+                //                    }
+                //                }
+
                 // instrument the state space
-                Instrumenter instrumenter = new Instrumenter(testStateSpaceDTO);
+                instrumenter = new Instrumenter(testStateSpaceDTO, codeClasspath);
                 instrumenter.instrument();
-	            this.rootClass = Class.forName(testStateSpaceDTO.getRootClass());
-	            this.rootObject = this.rootClass.newInstance();
+                //                this.rootClass = Class.forName(testStateSpaceDTO.getRootClass());
+                this.rootClass = this.instrumenter.lookup(testStateSpaceDTO.getRootClass());
+                this.rootObject = this.rootClass.newInstance();
                 // register the observer with the new object
                 IKoratObservable observable = (IKoratObservable) this.rootObject;
+                
+                // this.observer = new KoratObserver();
+                this.observer = (KoratObserver) this.instrumenter.lookup("com.scully.korat.KoratObserver").newInstance();
                 observable.$kor_setObserver(observer);
             }
             else
             {
-	            this.rootClass = Class.forName(testStateSpaceDTO.getRootClass());
-	            this.rootObject = this.rootClass.newInstance();
+                this.rootClass = Class.forName(testStateSpaceDTO.getRootClass());
+                this.rootObject = this.rootClass.newInstance();
             }
-
 
             // register the root object's fields
             createObjFields(this.rootObject);
@@ -126,7 +151,7 @@ public class Finitization
             //            StateObjectDTO[] stateObjects = testStateSpaceDTO.getStateObjects();
             List<StateObjectDTO> stateObjects = testStateSpaceDTO.getStateObjects();
             Map<String, ObjSet> objSets = new HashMap<String, ObjSet>();
-            for(StateObjectDTO stateObjectDTO : stateObjects)
+            for (StateObjectDTO stateObjectDTO : stateObjects)
             {
                 ObjSet objSet = this.createObjects(stateObjectDTO.getType(), stateObjectDTO.getQuantity());
                 if (stateObjectDTO.isIncludeNullFlag())
@@ -149,7 +174,7 @@ public class Finitization
             // map fields to FinSets
             //            StateFieldDTO[] stateFields = testStateSpaceDTO.getStateFields();
             List<StateFieldDTO> stateFields = testStateSpaceDTO.getStateFields();
-            for(StateFieldDTO stateField : stateFields)
+            for (StateFieldDTO stateField : stateFields)
             {
                 Class parent = Class.forName(stateField.getParentClass());
                 Field field = parent.getDeclaredField(stateField.getName());
@@ -300,7 +325,7 @@ public class Finitization
         //            // need '.' for appending field name below
         //            name = getSimpleName(c.getName()) + ".";
         //        }
-        for(Field field : c.getDeclaredFields())
+        for (Field field : c.getDeclaredFields())
         {
             // ignore JML & Korat instrumented fields
             if (field.getName().startsWith("rac$") || field.getName().startsWith("$kor_"))
@@ -358,7 +383,15 @@ public class Finitization
         Class c = null;
         try
         {
-            c = Class.forName(objName);
+            //            c = Class.forName(objName);
+            if (this.instrument)
+            {
+                c = this.instrumenter.lookup(objName);
+            }
+            else
+            {
+                c = Class.forName(objName);
+            }
         }
         catch (ClassNotFoundException e)
         {
@@ -439,7 +472,7 @@ public class Finitization
 
         // get the ObjFields that have been created for this field
         List<ObjField> objFieldList = this.objFieldsByName.get(field);
-        for(ObjField objField : objFieldList)
+        for (ObjField objField : objFieldList)
         {
             // add each ObjField to the state space
             this.space.put(objField, fieldDomain);
@@ -499,7 +532,7 @@ public class Finitization
             this.fieldOrderingCache = this.fieldOrdering.toArray(new ObjField[0]);
         }
         StringBuffer buf = new StringBuffer(64);
-        for(ObjField objField : this.fieldOrderingCache)
+        for (ObjField objField : this.fieldOrderingCache)
         {
             buf.append(objField).append("=").append(cv.get(objField)).append(", ");
         }
