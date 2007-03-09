@@ -2,42 +2,47 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry exported="true" sourcepath="C:/dev/libraries/commons-betwixt-20060810/commons-betwixt-20060810-src.zip" kind="lib" path="lib/commons-betwixt-20060810.jar">
+	<classpathentry exported="true" kind="lib" path="lib/commons-betwixt-20060810.jar" sourcepath="C:/dev/libraries/commons-betwixt-20060810/commons-betwixt-20060810-src.zip">
 		<attributes>
-			<attribute value="file:/C:/dev/libraries/commons-betwixt-20060810/docs/apidocs/" name="javadoc_location"/>
+			<attribute name="javadoc_location" value="file:/C:/dev/libraries/commons-betwixt-20060810/docs/apidocs/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" sourcepath="C:/dev/libraries/commons-beanutils-1.7.0/src/java" kind="lib" path="lib/commons-beanutils.jar">
+	<classpathentry exported="true" kind="lib" path="lib/commons-beanutils.jar" sourcepath="C:/dev/libraries/commons-beanutils-1.7.0/src/java">
 		<attributes>
-			<attribute value="file:/C:/dev/libraries/commons-beanutils-1.7.0/docs/api/" name="javadoc_location"/>
+			<attribute name="javadoc_location" value="file:/C:/dev/libraries/commons-beanutils-1.7.0/docs/api/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" sourcepath="C:/dev/libraries/commons-logging-1.1/src" kind="lib" path="lib/commons-logging-1.1.jar">
+	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.jar" sourcepath="C:/dev/libraries/commons-logging-1.1/src">
 		<attributes>
-			<attribute value="file:/C:/dev/libraries/commons-logging-1.1/docs/apidocs/" name="javadoc_location"/>
+			<attribute name="javadoc_location" value="file:/C:/dev/libraries/commons-logging-1.1/docs/apidocs/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" sourcepath="C:/dev/libraries/commons-digester-1.7/commons-digester-1.7-src.zip" kind="lib" path="lib/commons-digester-1.7.jar">
+	<classpathentry exported="true" kind="lib" path="lib/commons-digester-1.7.jar" sourcepath="C:/dev/libraries/commons-digester-1.7/commons-digester-1.7-src.zip">
 		<attributes>
-			<attribute value="file:/C:/dev/libraries/commons-digester-1.7/docs/apidocs/" name="javadoc_location"/>
+			<attribute name="javadoc_location" value="file:/C:/dev/libraries/commons-digester-1.7/docs/apidocs/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" sourcepath="C:/dev/libraries/commons-collections-3.2/commons-collections-3.2-src.zip" kind="lib" path="lib/commons-collections-3.2.jar">
+	<classpathentry exported="true" kind="lib" path="lib/commons-collections-3.2.jar" sourcepath="C:/dev/libraries/commons-collections-3.2/commons-collections-3.2-src.zip">
 		<attributes>
-			<attribute value="file:/C:/dev/libraries/commons-collections-3.2/docs/apidocs/" name="javadoc_location"/>
+			<attribute name="javadoc_location" value="file:/C:/dev/libraries/commons-collections-3.2/docs/apidocs/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" sourcepath="C:/dev/libraries/commons-lang-2.1/commons-lang-2.1-src.zip" kind="lib" path="lib/commons-lang-2.1.jar">
+	<classpathentry exported="true" kind="lib" path="lib/commons-lang-2.1.jar" sourcepath="C:/dev/libraries/commons-lang-2.1/commons-lang-2.1-src.zip">
 		<attributes>
-			<attribute value="file:/C:/dev/libraries/commons-lang-2.1/docs/api/" name="javadoc_location"/>
+			<attribute name="javadoc_location" value="file:/C:/dev/libraries/commons-lang-2.1/docs/api/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1"/>
-	<classpathentry sourcepath="C:/dev/libraries/javassist-3.3/src/main" kind="lib" path="lib/javassist.jar">
+	<classpathentry kind="lib" path="lib/javassist-3.4.jar" sourcepath="C:/dev/libraries/javassist-3.4/src/main">
 		<attributes>
-			<attribute value="file:/C:/dev/libraries/javassist-3.3/html/" name="javadoc_location"/>
+			<attribute name="javadoc_location" value="file:/C:/dev/libraries/javassist-3.4/html/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/classworlds-1.0.jar" sourcepath="C:/dev/libraries/classworlds-1.0/src/java">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/dev/libraries/classworlds-1.0/docs/apidocs/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="classes"/>

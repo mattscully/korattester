@@ -2,8 +2,10 @@ package com.scully.korat.instrument;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javassist.CannotCompileException;
 import javassist.ClassClassPath;
@@ -33,13 +35,34 @@ public class Instrumenter
 
     Loader loader;
 
+    Map<String, Class> instrumentedClasses;
+
+    public Instrumenter(TestStateSpaceDTO stateSpace)
+    {
+        this(stateSpace, null);
+    }
+
     public Instrumenter(TestStateSpaceDTO stateSpace, String[] extraClasspath)
     {
         this.stateSpace = stateSpace;
-        this.classPool = ClassPool.getDefault();
+        // gets a new ClassPool object instead of the singleton below
+//        ClassPool parent = new ClassPool(true);
+//        parent.appendClassPath(new ClassClassPath(this.getClass()));
+        this.classPool = new ClassPool(true);
+        ClassClassPath classpath = new ClassClassPath(this.getClass());
+        this.classPool.appendClassPath(classpath);
+        // this adds classpath for current classloader, not just default jvm classloader
+        //        this.classPool.appendSystemPath();
+        this.instrumentedClasses = new HashMap<String, Class>();
+        this.classPool.childFirstLookup = true;
+        //        this.classPool = ClassPool.getDefault();
         // Append the current classpath of the JVM
         // This is needed to find the korat classes (IKoratObservable, etc...)
-        this.classPool.appendClassPath(new ClassClassPath(this.getClass()));
+
+        // XXX: will need this uncommented probably...
+        // this adds classpath for current classloader, not just default jvm classloader
+        //        this.classPool.appendClassPath(new ClassClassPath(this.getClass()));
+
         // append extra classpath
         if (extraClasspath != null)
         {
@@ -47,6 +70,7 @@ public class Instrumenter
             {
                 try
                 {
+                    // XXX
                     this.classPool.appendClassPath(path);
                 }
                 catch (NotFoundException e)
@@ -56,7 +80,8 @@ public class Instrumenter
                 }
             }
         }
-        this.loader = new Loader(this.getClass().getClassLoader(), this.classPool);
+        // XXX: moved this inside loop
+        //        this.loader = new Loader(this.getClass().getClassLoader(), this.classPool);
     }
 
     /**
@@ -80,10 +105,6 @@ public class Instrumenter
         for (String className : workList)
         {
             CtClass cc = this.classPool.get(className);
-            if (cc.isFrozen())
-            {
-                cc.defrost();
-            }
             insertShadowFields(cc);
             insertObserver(cc);
             insertGettersSetters(cc);
@@ -92,37 +113,64 @@ public class Instrumenter
         {
             CtClass cc = this.classPool.get(className);
             instrumentFieldAccesses(cc);
-            Class clazz = cc.toClass(this.loader, this.getClass().getProtectionDomain());
-            clazz = null;
+            // XXX
+            if (this.loader != null)
+            {
+                Class clazz = cc.toClass(this.loader, this.getClass().getProtectionDomain());
+                clazz = null;
+            }
+            else
+            {
+                ClassLoader currentLoader = this.getClass().getClassLoader();
+                cc.toClass(currentLoader, this.getClass().getProtectionDomain());
+            }
+
         }
     }
 
     public Class lookup(String className) throws ClassNotFoundException
     {
-//        Class clazz = null;
-//        try
-//        {
-//            clazz = this.classPool.get(className).toClass(this.loader, null);
-//        }
-//        catch (CannotCompileException e)
-//        {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//            throw new ClassNotFoundException(className, e);
-//        }
-//        catch (NotFoundException e)
-//        {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//            throw new ClassNotFoundException(className, e);
-//        }
-//        if (clazz == null)
-//        {
-//	        throw new ClassNotFoundException(className);
-//        }
-//        return clazz;
-////        cc.toClass(this.loader, null);
-        return this.loader.loadClass(className);
+        //        Class clazz = null;
+        //        try
+        //        {
+        //            clazz = this.classPool.get(className).toClass();
+        ////            clazz = this.classPool.get(className).toClass(this.loader, null);
+        //        }
+        //        catch (CannotCompileException e)
+        //        {
+        //            // TODO Auto-generated catch block
+        //            e.printStackTrace();
+        //            throw new ClassNotFoundException(className, e);
+        //        }
+        //        catch (NotFoundException e)
+        //        {
+        //            // TODO Auto-generated catch block
+        //            e.printStackTrace();
+        //            throw new ClassNotFoundException(className, e);
+        //        }
+        //        if (clazz == null)
+        //        {
+        //            throw new ClassNotFoundException(className);
+        //        }
+        //        return clazz;
+        //        cc.toClass(this.loader, null);
+        // XXX
+        if (this.loader == null)
+        {
+            Class clazz = this.instrumentedClasses.get(className);
+            if (clazz != null)
+            {
+                return clazz;
+            }
+            else
+            {
+                return Class.forName(className);
+            }
+        }
+        else
+        {
+            return this.loader.loadClass(className);
+        }
     }
 
     public void insertShadowFields(CtClass cc) throws CannotCompileException

@@ -7,6 +7,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javassist.ClassPool;
+import javassist.Loader;
+import javassist.NotFoundException;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -219,41 +223,48 @@ public class StateSpaceWizard extends Wizard implements INewWizard
     {
         try
         {
-            List<String> classpath = new ArrayList<String>();
+            // first arg is state space XML, the rest is the classpath
+            List<String> koratArgs = new ArrayList<String>();
+            koratArgs.add(BeanXmlMapper.beanToXml(this.stateSpaceBuilder.getStateSpace()));
             try
             {
-//                IClasspathEntry[] cp = this.selection.getJavaProject().getResolvedClasspath(true);
-//                //	            String prefix = this.selection.getJavaProject()
+                //                IClasspathEntry[] cp = this.selection.getJavaProject().getResolvedClasspath(true);
+                //                //	            String prefix = this.selection.getJavaProject()
                 IPath workspaceLocation = this.selection.getJavaProject().getProject().getWorkspace().getRoot()
                         .getLocation();
-//
+                //
                 String fullPath = null;
-//                for (IClasspathEntry entry : cp)
-//                {
-//                    IPath path = entry.getPath();
-//                    fullPath = getFullPath(workspaceLocation, path);
-//                    if (fullPath != null)
-//                    {
-//                        classpath.add(fullPath);
-//                    }
-//                }
+                //                for (IClasspathEntry entry : cp)
+                //                {
+                //                    IPath path = entry.getPath();
+                //                    fullPath = getFullPath(workspaceLocation, path);
+                //                    if (fullPath != null)
+                //                    {
+                //                        classpath.add(fullPath);
+                //                    }
+                //                }
                 IPath path = this.selection.getJavaProject().getOutputLocation();
                 fullPath = getFullPath(workspaceLocation, path);
                 if (fullPath != null)
-                    classpath.add(fullPath);
+                {
+                    koratArgs.add(fullPath);
+                }
             }
             catch (JavaModelException e)
             {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            String[] codeClasspath = null;
-            if (!classpath.isEmpty())
+            Loader loader = new Loader(this.getClass().getClassLoader(), new ClassPool(true));
+            try
             {
-                codeClasspath = classpath.toArray(new String[] {});
+                loader.run("com.scully.korat.KoratMain", koratArgs.toArray(new String[] {}));
             }
-
-            KoratClient.populateTestCandidates(this.stateSpaceBuilder.getStateSpace(), codeClasspath);
+            catch (Throwable e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
         catch (NullPointerException e)
         {

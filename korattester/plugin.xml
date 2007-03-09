@@ -29,7 +29,7 @@
       <library name="lib/commons-betwixt-20060810.jar">
          <export name="*"/>
       </library>
-      <library name="lib/javassist.jar">
+      <library name="lib/javassist-3.4.jar">
          <export name="*"/>
       </library>
    </runtime>
