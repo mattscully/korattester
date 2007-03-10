@@ -24,6 +24,8 @@ public class WizTypeInfo
     private Set<String> usedTypes;
 
     private Map<String, List<StateFieldDTO>> primitiveFields;
+    
+    private Map<String, List<StateFieldDTO>> objectFields;
 
     public WizTypeInfo(IType type)
     {
@@ -31,6 +33,7 @@ public class WizTypeInfo
         
         // initialize field data
         this.primitiveFields = new HashMap<String, List<StateFieldDTO>>();
+        this.objectFields = new HashMap<String, List<StateFieldDTO>>();
         this.usedTypes = new HashSet<String>();
         try
         {
@@ -40,40 +43,41 @@ public class WizTypeInfo
         {
             // TODO Auto-generated catch block
             this.primitiveFields = null;
+	        this.objectFields = null;
             e.printStackTrace();
         }
     }
 
-    public Map<String, List<StateFieldDTO>> getPrimitiveFields()
-    {
-        return this.primitiveFields;
-    }
-
-    /**
-     * 
-     */
-    public Set<String> getUsedTypes()
-    {
-        return this.usedTypes;
-    }
-
     private void putPrimitiveField(IField field) throws IllegalArgumentException, JavaModelException
+    {
+        String typeName = Signature.toString(field.getTypeSignature());
+        putField(this.primitiveFields, field, typeName);
+    }
+    
+    private void putObjectField(IField field) throws IllegalArgumentException, JavaModelException
+    {
+        String typeName = findType(field).getFullyQualifiedName();
+        putField(this.objectFields, field, typeName);
+    }
+    
+    
+    private static void putField(Map<String, List<StateFieldDTO>> fieldMap, IField field, String typeName) throws IllegalArgumentException, JavaModelException
     {
         String parentType = field.getDeclaringType().getFullyQualifiedName();
         String fieldName = field.getElementName();
-        String typeName = Signature.toString(field.getTypeSignature());
 
         StateFieldDTO fieldDTO = new StateFieldDTO();
         fieldDTO.setParentClass(parentType);
         fieldDTO.setName(fieldName);
         fieldDTO.setType(typeName);
-        List<StateFieldDTO> fields = this.primitiveFields.get(parentType);
+        List<StateFieldDTO> fields = fieldMap.get(parentType);
         if (fields == null)
         {
             fields = new ArrayList<StateFieldDTO>();
         }
         fields.add(fieldDTO);
-        this.primitiveFields.put(parentType, fields);
+        fieldMap.put(parentType, fields);
+        
     }
 
     private void collectTypes(IField[] fields) throws JavaModelException
@@ -86,6 +90,7 @@ public class WizTypeInfo
                 // type of Object
                 if (fieldType != null)
                 {
+                    putObjectField(field);
                     String qualifiedName = fieldType.getFullyQualifiedName();
                     if (StringUtils.isNotEmpty(qualifiedName) && !this.usedTypes.contains(qualifiedName))
                     {
@@ -131,6 +136,27 @@ public class WizTypeInfo
     public IType getType()
     {
         return type;
+    }
+
+    /**
+     * @return the objectFields
+     */
+    public Map<String, List<StateFieldDTO>> getObjectFields()
+    {
+        return objectFields;
+    }
+
+    public Map<String, List<StateFieldDTO>> getPrimitiveFields()
+    {
+        return this.primitiveFields;
+    }
+
+    /**
+     * 
+     */
+    public Set<String> getUsedTypes()
+    {
+        return this.usedTypes;
     }
 
 }

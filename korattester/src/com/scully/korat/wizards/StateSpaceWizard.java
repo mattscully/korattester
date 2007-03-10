@@ -8,12 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javassist.ClassPool;
-import javassist.Loader;
-import javassist.NotFoundException;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -23,7 +20,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -38,7 +34,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
-import com.scully.korat.KoratClient;
+import com.scully.korat.instrument.Loader;
 import com.scully.korat.map.BeanXmlMapper;
 import com.scully.korat.map.StateFieldDTO;
 import com.scully.korat.map.StateSpaceBuilder;
@@ -202,12 +198,21 @@ public class StateSpaceWizard extends Wizard implements INewWizard
         }
 
         // ==> create StateFields
+        // add primitive fields
         for (List<StateFieldDTO> fields : this.wizTypeInfo.getPrimitiveFields().values())
         {
             for (StateFieldDTO field : fields)
             {
                 field.setMin(this.defineNativeFieldRangesPage.getFieldMin(field));
                 field.setMax(this.defineNativeFieldRangesPage.getFieldMax(field));
+                this.stateSpaceBuilder.addStateField(field);
+            }
+        }
+        // add object fields
+        for (List<StateFieldDTO> fields : this.wizTypeInfo.getObjectFields().values())
+        {
+            for (StateFieldDTO field : fields)
+            {
                 this.stateSpaceBuilder.addStateField(field);
             }
         }
@@ -221,11 +226,11 @@ public class StateSpaceWizard extends Wizard implements INewWizard
      */
     private InputStream openContentStream()
     {
+        String contents = null;
         try
         {
             // first arg is state space XML, the rest is the classpath
-            List<String> koratArgs = new ArrayList<String>();
-            koratArgs.add(BeanXmlMapper.beanToXml(this.stateSpaceBuilder.getStateSpace()));
+            List<String> classpath = new ArrayList<String>();
             try
             {
                 //                IClasspathEntry[] cp = this.selection.getJavaProject().getResolvedClasspath(true);
@@ -247,7 +252,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
                 fullPath = getFullPath(workspaceLocation, path);
                 if (fullPath != null)
                 {
-                    koratArgs.add(fullPath);
+                    classpath.add(fullPath);
                 }
             }
             catch (JavaModelException e)
@@ -258,19 +263,23 @@ public class StateSpaceWizard extends Wizard implements INewWizard
             Loader loader = new Loader(this.getClass().getClassLoader(), new ClassPool(true));
             try
             {
-                loader.run("com.scully.korat.KoratMain", koratArgs.toArray(new String[] {}));
+                String stateSpaceXml = BeanXmlMapper.beanToXml(this.stateSpaceBuilder.getStateSpace());
+                contents = (String) loader.invokeExactMethod("com.scully.korat.KoratMain", "run",
+                        new Object[] { stateSpaceXml, classpath.toArray(new String[] {}) } );
             }
             catch (Throwable e)
             {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+            loader = null;
+            System.gc();
+            System.gc();
         }
         catch (NullPointerException e)
         {
             e.printStackTrace();
         }
-        String contents = BeanXmlMapper.beanToXml(this.stateSpaceBuilder.getStateSpace());
         return new ByteArrayInputStream(contents.getBytes());
     }
 
