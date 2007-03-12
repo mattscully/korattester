@@ -7,8 +7,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javassist.ClassClassPath;
 import javassist.ClassPool;
+import javassist.NotFoundException;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -21,6 +24,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -231,6 +235,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
         {
             // first arg is state space XML, the rest is the classpath
             List<String> classpath = new ArrayList<String>();
+            ClassPool classPool = new ClassPool(true);
             try
             {
                 //                IClasspathEntry[] cp = this.selection.getJavaProject().getResolvedClasspath(true);
@@ -253,25 +258,43 @@ public class StateSpaceWizard extends Wizard implements INewWizard
                 if (fullPath != null)
                 {
                     classpath.add(fullPath);
+                    classPool.appendClassPath(fullPath);
                 }
+//            classpath.add("C:/Documents and Settings/mscully/My Documents/UT/Archive/Verification and Validation/workspace/korattester/classes");
+                classPool.appendClassPath("C:/Documents and Settings/mscully/My Documents/UT/Archive/Verification and Validation/workspace/korattester/classes");
+	            classPool.appendClassPath(new ClassClassPath(this.getClass()));
+                classPool.childFirstLookup = true;
             }
             catch (JavaModelException e)
             {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            Loader loader = new Loader(this.getClass().getClassLoader(), new ClassPool(true));
+            catch (NotFoundException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            System.out.println("var names: " + ArrayUtils.toString(JavaCore.getClasspathVariableNames()));
+            System.out.println("classpath: " + classpath);
+            System.out.println("classpath: " + classPool);
+            // perhaps classes are getting loaded in this parent loader???
+//            Loader loader = new Loader(this.getClass().getClassLoader(), new ClassPool(true));
+            Loader loader = new Loader(this.getClass().getClassLoader(), classPool);
             try
             {
                 String stateSpaceXml = BeanXmlMapper.beanToXml(this.stateSpaceBuilder.getStateSpace());
                 contents = (String) loader.invokeExactMethod("com.scully.korat.KoratMain", "run",
                         new Object[] { stateSpaceXml, classpath.toArray(new String[] {}) } );
+//                contents = (String) loader.invokeExactMethod("com.scully.korat.KoratMain", "run",
+//                        new Object[] { stateSpaceXml } );
             }
             catch (Throwable e)
             {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+//            loader.printClasses(System.out);
             loader = null;
             System.gc();
             System.gc();

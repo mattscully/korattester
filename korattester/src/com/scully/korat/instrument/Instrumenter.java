@@ -21,6 +21,7 @@ import javassist.expr.FieldAccess;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.scully.korat.KoratMain;
 import com.scully.korat.map.StateFieldDTO;
 import com.scully.korat.map.StateObjectDTO;
 import com.scully.korat.map.TestStateSpaceDTO;
@@ -46,11 +47,10 @@ public class Instrumenter
     {
         this.stateSpace = stateSpace;
         // gets a new ClassPool object instead of the singleton below
-//        ClassPool parent = new ClassPool(true);
-//        parent.appendClassPath(new ClassClassPath(this.getClass()));
         this.classPool = new ClassPool(true);
-        ClassClassPath classpath = new ClassClassPath(this.getClass());
+        ClassClassPath classpath = new ClassClassPath(KoratMain.class);
         this.classPool.appendClassPath(classpath);
+        
         // this adds classpath for current classloader, not just default jvm classloader
         //        this.classPool.appendSystemPath();
         this.instrumentedClasses = new HashMap<String, Class>();
