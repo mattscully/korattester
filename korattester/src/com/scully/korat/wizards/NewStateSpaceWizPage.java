@@ -1,25 +1,36 @@
 package com.scully.korat.wizards;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
+
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.ui.IJavaElementSearchConstants;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.dialogs.ListDialog;
 import org.eclipse.ui.dialogs.SelectionDialog;
 
 /**
@@ -73,17 +84,7 @@ public class NewStateSpaceWizPage extends WizardPage
 
         // add Base Class input field
         this.baseClassText = new Text(container, SWT.BORDER | SWT.SINGLE);
-        addInputField(container, this.baseClassText, false, false);
-
-        // add Browse button for Base Class
-        Button button = new Button(container, SWT.PUSH);
-        button.setText("Browse...");
-        button.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e)
-            {
-                handleBrowseBaseType();
-            }
-        });
+        addInputField(container, this.baseClassText, false, false).horizontalSpan = 2;
 
         // add File Name
         addLabel(container, "&File name:");
@@ -93,7 +94,17 @@ public class NewStateSpaceWizPage extends WizardPage
         // add RepOk
         addLabel(container, "&RepOk Method:");
         this.repOkMethodText = new Text(container, SWT.BORDER | SWT.SINGLE);
-        addInputField(container, this.repOkMethodText, true, true).horizontalSpan = 2;
+        addInputField(container, this.repOkMethodText, false, true);
+
+        // add Browse button for RepOk method
+        Button button = new Button(container, SWT.PUSH);
+        button.setText("Select Method...");
+        button.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e)
+            {
+                handleSelectMethod();
+            }
+        });
 
         // add Source folder
         addLabel(container, "Source fol&der:");
@@ -117,11 +128,11 @@ public class NewStateSpaceWizPage extends WizardPage
         return label;
     }
 
-    private GridData addInputField(Composite container, Text text, boolean enabled, boolean handleModify)
+    private GridData addInputField(Composite container, Text text, boolean editable, boolean handleModify)
     {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         text.setLayoutData(gd);
-        text.setEnabled(enabled);
+        text.setEditable(editable);
         if (handleModify)
         {
             text.addModifyListener(new ModifyListener() {
@@ -162,54 +173,87 @@ public class NewStateSpaceWizPage extends WizardPage
         this.sourceFolderText.setText("/TestKoratPlugin/src");
         this.packageNameText.setText(this.wizTypeInfo.getType().getPackageFragment().getElementName());
     }
-    
-    public IType selectType() throws JavaModelException {
-        SelectionDialog dialog= JavaUI.createTypeDialog(
-            this.getShell(), new ProgressMonitorDialog(this.getShell()),
-            SearchEngine.createWorkspaceScope(),
-            IJavaElementSearchConstants.CONSIDER_ALL_TYPES, false);
-        dialog.setTitle("My Dialog Title");
-        dialog.setMessage("My Dialog Message");
+
+    public IType selectType() throws JavaModelException
+    {
+        SelectionDialog dialog = JavaUI.createTypeDialog(this.getShell(), new ProgressMonitorDialog(this.getShell()),
+                SearchEngine.createWorkspaceScope(), IJavaElementSearchConstants.CONSIDER_ALL_TYPES, false);
+        dialog.setTitle("Select Type");
+        dialog.setMessage("Select a type");
         if (dialog.open() == IDialogConstants.CANCEL_ID)
             return null;
 
-        Object[] types= dialog.getResult();
+        Object[] types = dialog.getResult();
         if (types == null || types.length == 0)
             return null;
-        return (IType)types[0];
+        return (IType) types[0];
+    }
+
+    public String selectMethod() throws JavaModelException
+    {
+        List<IMethod> methods = Arrays.asList(this.wizTypeInfo.getType().getMethods());
+        List<String> methodNames = new ArrayList<String>();
+        
+        // only use methods that return boolean and don't have any parameters
+        for (ListIterator<IMethod> iter = methods.listIterator(); iter.hasNext();)
+        {
+            IMethod method = (IMethod) iter.next();
+            String[] params = method.getParameterNames();
+            String returnType = method.getReturnType();
+            if(params.length == 0 && "Z".equals(returnType))
+            {
+                methodNames.add(method.getElementName());
+            }
+        }
+        
+        // Create the list dialog
+        ListDialog dialog = new ListDialog(this.getShell());
+        dialog.setAddCancelButton(true);
+        dialog.setContentProvider(new ArrayContentProvider());
+        dialog.setLabelProvider(new LabelProvider());
+        dialog.setInput(methodNames);
+        dialog.setInitialSelections(new Object[] { this.repOkMethodText.getText() });
+        dialog.setTitle("Dialog Title");
+        dialog.setMessage("Dialog Message");
+        dialog.setHelpAvailable(false);
+        if (dialog.open() == IDialogConstants.CANCEL_ID)
+            return null;
+
+        Object[] selectedMethods = dialog.getResult();
+        if (selectedMethods == null || selectedMethods.length == 0)
+            return null;
+        return (String) selectedMethods[0];
     }
 
     /**
      * Uses the standard container selection dialog to choose the new value for
      * the container field.
      */
-    private void handleBrowseBaseType()
+    private void handleSelectMethod()
     {
         try
         {
-            IType baseType = selectType();
-            updateState(baseType);
+            String method = selectMethod();
+            if(method != null)
+            {
+	            this.repOkMethodText.setText(method);
+            }
         }
         catch (JavaModelException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-//        ContainerSelectionDialog dialog = new ContainerSelectionDialog(getShell(), ResourcesPlugin.getWorkspace()
-//                .getRoot(), false, "Select new file container");
-//        if (dialog.open() == ContainerSelectionDialog.OK)
-//        {
-//            Object[] result = dialog.getResult();
-//            if (result.length == 1)
-//            {
-//                this.sourceFolderText.setText(((Path) result[0]).toString());
-//            }
-//        }
-    }
-
-    private void updateState(IType baseType)
-    {
-        this.baseClassText.setText(baseType.getFullyQualifiedName());
+        //        ContainerSelectionDialog dialog = new ContainerSelectionDialog(getShell(), ResourcesPlugin.getWorkspace()
+        //                .getRoot(), false, "Select new file container");
+        //        if (dialog.open() == ContainerSelectionDialog.OK)
+        //        {
+        //            Object[] result = dialog.getResult();
+        //            if (result.length == 1)
+        //            {
+        //                this.sourceFolderText.setText(((Path) result[0]).toString());
+        //            }
+        //        }
     }
 
     /**

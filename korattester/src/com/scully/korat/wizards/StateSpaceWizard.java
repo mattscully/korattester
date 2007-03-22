@@ -80,8 +80,6 @@ public class StateSpaceWizard extends Wizard implements INewWizard
 
     private WizTypeInfo wizTypeInfo;
     
-//    private List<IWizardPage> wizardPages;
-
     /**
      * Constructor for StateSpaceWizard.
      */
@@ -90,7 +88,6 @@ public class StateSpaceWizard extends Wizard implements INewWizard
         super();
         setNeedsProgressMonitor(true);
         this.stateSpaceBuilder = new StateSpaceBuilder();
-//        this.wizardPages = new HashMap<String, IWizardPage>();
     }
 
     /**
