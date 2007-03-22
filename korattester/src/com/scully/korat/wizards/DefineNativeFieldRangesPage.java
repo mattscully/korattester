@@ -23,9 +23,9 @@ public class DefineNativeFieldRangesPage extends WizardPage
     
 	private Map<String, Text> fieldRangeMaxMap = new HashMap<String, Text>();
 
-    public DefineNativeFieldRangesPage(WizTypeInfo wizTypeInfo)
+    public DefineNativeFieldRangesPage(String pageName, WizTypeInfo wizTypeInfo)
     {
-        super("primitiveFieldRangesPage");
+        super(pageName);
         this.wizTypeInfo = wizTypeInfo;
         setTitle("Define Primitive Field Ranges for State Space");
         setDescription("This wizard creates an XML file representing the selected object's state space.");

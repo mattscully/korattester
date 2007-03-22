@@ -22,9 +22,9 @@ public class DefineObjPoolsPage extends WizardPage
     
 	private Map<String, Button> objPoolNullableCheckboxMap = new HashMap<String, Button>();
 
-    public DefineObjPoolsPage(WizTypeInfo wizTypeInfo)
+    public DefineObjPoolsPage(String pageName, WizTypeInfo wizTypeInfo)
     {
-        super("objectPoolPage");
+        super(pageName);
         this.wizTypeInfo = wizTypeInfo;
         setTitle("Define Object Pools for State Space");
         setDescription("This wizard creates an XML file representing the selected object's state space.");

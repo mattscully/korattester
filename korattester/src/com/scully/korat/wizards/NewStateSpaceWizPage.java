@@ -1,8 +1,13 @@
 package com.scully.korat.wizards;
 
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.ui.IJavaElementSearchConstants;
+import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -15,7 +20,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.dialogs.ContainerSelectionDialog;
+import org.eclipse.ui.dialogs.SelectionDialog;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well
@@ -44,9 +49,9 @@ public class NewStateSpaceWizPage extends WizardPage
      * 
      * @param pageName
      */
-    public NewStateSpaceWizPage(WizTypeInfo wizTypeInfo)
+    public NewStateSpaceWizPage(String pageName, WizTypeInfo wizTypeInfo)
     {
-        super("stateSpacePage");
+        super(pageName);
         this.wizTypeInfo = wizTypeInfo;
         setTitle("Create State Space for " + this.wizTypeInfo.getType().getFullyQualifiedName());
         setDescription("This wizard creates an XML file representing the selected object's state space.");
@@ -76,7 +81,7 @@ public class NewStateSpaceWizPage extends WizardPage
         button.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e)
             {
-                handleBrowse();
+                handleBrowseBaseType();
             }
         });
 
@@ -157,24 +162,54 @@ public class NewStateSpaceWizPage extends WizardPage
         this.sourceFolderText.setText("/TestKoratPlugin/src");
         this.packageNameText.setText(this.wizTypeInfo.getType().getPackageFragment().getElementName());
     }
+    
+    public IType selectType() throws JavaModelException {
+        SelectionDialog dialog= JavaUI.createTypeDialog(
+            this.getShell(), new ProgressMonitorDialog(this.getShell()),
+            SearchEngine.createWorkspaceScope(),
+            IJavaElementSearchConstants.CONSIDER_ALL_TYPES, false);
+        dialog.setTitle("My Dialog Title");
+        dialog.setMessage("My Dialog Message");
+        if (dialog.open() == IDialogConstants.CANCEL_ID)
+            return null;
+
+        Object[] types= dialog.getResult();
+        if (types == null || types.length == 0)
+            return null;
+        return (IType)types[0];
+    }
 
     /**
      * Uses the standard container selection dialog to choose the new value for
      * the container field.
      */
-
-    private void handleBrowse()
+    private void handleBrowseBaseType()
     {
-        ContainerSelectionDialog dialog = new ContainerSelectionDialog(getShell(), ResourcesPlugin.getWorkspace()
-                .getRoot(), false, "Select new file container");
-        if (dialog.open() == ContainerSelectionDialog.OK)
+        try
         {
-            Object[] result = dialog.getResult();
-            if (result.length == 1)
-            {
-                this.sourceFolderText.setText(((Path) result[0]).toString());
-            }
+            IType baseType = selectType();
+            updateState(baseType);
         }
+        catch (JavaModelException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+//        ContainerSelectionDialog dialog = new ContainerSelectionDialog(getShell(), ResourcesPlugin.getWorkspace()
+//                .getRoot(), false, "Select new file container");
+//        if (dialog.open() == ContainerSelectionDialog.OK)
+//        {
+//            Object[] result = dialog.getResult();
+//            if (result.length == 1)
+//            {
+//                this.sourceFolderText.setText(((Path) result[0]).toString());
+//            }
+//        }
+    }
+
+    private void updateState(IType baseType)
+    {
+        this.baseClassText.setText(baseType.getFullyQualifiedName());
     }
 
     /**

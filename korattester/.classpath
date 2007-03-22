@@ -2,9 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-betwixt-20060810.jar" sourcepath="C:/dev/libraries/commons-betwixt-20060810/commons-betwixt-20060810-src.zip">
+	<classpathentry exported="true" kind="lib" path="lib/commons-betwixt-0.8.jar" sourcepath="C:/dev/libraries/commons-betwixt-0.8/src/java">
 		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/dev/libraries/commons-betwixt-20060810/docs/apidocs/"/>
+			<attribute name="javadoc_location" value="file:/C:/dev/libraries/commons-betwixt-0.8/docs/apidocs/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/commons-beanutils.jar" sourcepath="C:/dev/libraries/commons-beanutils-1.7.0/src/java">
@@ -38,11 +38,6 @@
 	<classpathentry kind="lib" path="lib/javassist-3.4.jar" sourcepath="C:/dev/libraries/javassist-3.4/src/main">
 		<attributes>
 			<attribute name="javadoc_location" value="file:/C:/dev/libraries/javassist-3.4/html/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/classworlds-1.0.jar" sourcepath="C:/dev/libraries/classworlds-1.0/src/java">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/dev/libraries/classworlds-1.0/docs/apidocs/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="classes"/>

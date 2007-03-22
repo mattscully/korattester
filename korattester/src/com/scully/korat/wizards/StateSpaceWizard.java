@@ -5,7 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javassist.ClassClassPath;
 import javassist.ClassPool;
@@ -23,12 +27,20 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.debug.core.Launch;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.launching.IVMInstall;
+import org.eclipse.jdt.launching.IVMRunner;
+import org.eclipse.jdt.launching.JavaRuntime;
+import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
@@ -67,6 +79,8 @@ public class StateSpaceWizard extends Wizard implements INewWizard
     private IType selection;
 
     private WizTypeInfo wizTypeInfo;
+    
+//    private List<IWizardPage> wizardPages;
 
     /**
      * Constructor for StateSpaceWizard.
@@ -76,6 +90,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
         super();
         setNeedsProgressMonitor(true);
         this.stateSpaceBuilder = new StateSpaceBuilder();
+//        this.wizardPages = new HashMap<String, IWizardPage>();
     }
 
     /**
@@ -85,12 +100,17 @@ public class StateSpaceWizard extends Wizard implements INewWizard
     public void addPages()
     {
         this.wizTypeInfo = new WizTypeInfo(this.selection);
-        this.newStateSpaceWizPage = new NewStateSpaceWizPage(this.wizTypeInfo);
-        this.defineObjPoolsPage = new DefineObjPoolsPage(this.wizTypeInfo);
-        this.defineNativeFieldRangesPage = new DefineNativeFieldRangesPage(this.wizTypeInfo);
+        this.newStateSpaceWizPage = new NewStateSpaceWizPage("stateSpacePage", this.wizTypeInfo);
+        this.defineObjPoolsPage = new DefineObjPoolsPage("objectPoolPage", this.wizTypeInfo);
+        this.defineNativeFieldRangesPage = new DefineNativeFieldRangesPage("primitiveFieldRangesPage", this.wizTypeInfo);
         addPage(this.newStateSpaceWizPage);
         addPage(this.defineObjPoolsPage);
         addPage(this.defineNativeFieldRangesPage);
+    }
+    
+    public void updateState(IType baseType)
+    {
+        this.selection = baseType;
     }
 
     /**
@@ -230,45 +250,79 @@ public class StateSpaceWizard extends Wizard implements INewWizard
      */
     private InputStream openContentStream()
     {
+        String contents = getStateSpaceXmlUsingClassLoader();
+        getStateSpaceXmlUsingLauncher();
+        return new ByteArrayInputStream(contents.getBytes());
+    }
+
+    // added org.eclipse.debug.core and org.eclipse.jdt.launching to plugin.xml
+    private void getStateSpaceXmlUsingLauncher()
+    {
+//        String contents = null;
+        IVMInstall vmInstall = null;
+        List<String> koratClassPath = getClasspath();
+        try
+        {
+            vmInstall = JavaRuntime.getVMInstall(this.selection.getJavaProject());
+        }
+        catch (CoreException e1)
+        {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        if (vmInstall == null)
+            vmInstall = JavaRuntime.getDefaultVMInstall();
+        if (vmInstall != null)
+        {
+            IVMRunner vmRunner = vmInstall.getVMRunner(ILaunchManager.RUN_MODE);
+            if (vmRunner != null)
+            {
+                try
+                {
+	                String[] classPath = JavaRuntime.computeDefaultRuntimeClassPath(this.selection.getJavaProject());
+                    koratClassPath.addAll(Arrays.asList(classPath));
+                }
+                catch (CoreException e)
+                {
+                    e.printStackTrace();
+                }
+                if (!koratClassPath.isEmpty())
+                {
+                    VMRunnerConfiguration vmConfig = new VMRunnerConfiguration("com.scully.korat.KoratMain", (String[]) koratClassPath.toArray(new String[koratClassPath.size()]));
+                    ILaunch launch = new Launch(null, ILaunchManager.RUN_MODE, null);
+                    try
+                    {
+                        vmRunner.run(vmConfig, launch, null);
+                    }
+                    catch (CoreException e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @return
+     */
+    private String getStateSpaceXmlUsingClassLoader()
+    {
         String contents = null;
         try
         {
-            // first arg is state space XML, the rest is the classpath
-            List<String> classpath = new ArrayList<String>();
+            List<String> classpath = getClasspath();
             ClassPool classPool = new ClassPool(true);
             try
             {
-                //                IClasspathEntry[] cp = this.selection.getJavaProject().getResolvedClasspath(true);
-                //                //	            String prefix = this.selection.getJavaProject()
-                IPath workspaceLocation = this.selection.getJavaProject().getProject().getWorkspace().getRoot()
-                        .getLocation();
-                //
-                String fullPath = null;
-                //                for (IClasspathEntry entry : cp)
-                //                {
-                //                    IPath path = entry.getPath();
-                //                    fullPath = getFullPath(workspaceLocation, path);
-                //                    if (fullPath != null)
-                //                    {
-                //                        classpath.add(fullPath);
-                //                    }
-                //                }
-                IPath path = this.selection.getJavaProject().getOutputLocation();
-                fullPath = getFullPath(workspaceLocation, path);
-                if (fullPath != null)
+                for (String cpEntry : classpath)
                 {
-                    classpath.add(fullPath);
-                    classPool.appendClassPath(fullPath);
+                    classPool.appendClassPath(cpEntry);
                 }
-//            classpath.add("C:/Documents and Settings/mscully/My Documents/UT/Archive/Verification and Validation/workspace/korattester/classes");
-                classPool.appendClassPath("C:/Documents and Settings/mscully/My Documents/UT/Archive/Verification and Validation/workspace/korattester/classes");
-	            classPool.appendClassPath(new ClassClassPath(this.getClass()));
+//                classPool.appendClassPath("C:/Documents and Settings/mscully/My Documents/UT/Archive/Verification and Validation/workspace/korattester/classes");
+                classPool.appendClassPath(new ClassClassPath(this.getClass()));
                 classPool.childFirstLookup = true;
-            }
-            catch (JavaModelException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
             }
             catch (NotFoundException e)
             {
@@ -279,22 +333,22 @@ public class StateSpaceWizard extends Wizard implements INewWizard
             System.out.println("classpath: " + classpath);
             System.out.println("classpath: " + classPool);
             // perhaps classes are getting loaded in this parent loader???
-//            Loader loader = new Loader(this.getClass().getClassLoader(), new ClassPool(true));
+            //            Loader loader = new Loader(this.getClass().getClassLoader(), new ClassPool(true));
             Loader loader = new Loader(this.getClass().getClassLoader(), classPool);
             try
             {
                 String stateSpaceXml = BeanXmlMapper.beanToXml(this.stateSpaceBuilder.getStateSpace());
-                contents = (String) loader.invokeExactMethod("com.scully.korat.KoratMain", "run",
-                        new Object[] { stateSpaceXml, classpath.toArray(new String[] {}) } );
-//                contents = (String) loader.invokeExactMethod("com.scully.korat.KoratMain", "run",
-//                        new Object[] { stateSpaceXml } );
+                contents = (String) loader.invokeExactMethod("com.scully.korat.KoratMain", "run", new Object[] {
+                        stateSpaceXml, classpath.toArray(new String[] {}) });
+                //                contents = (String) loader.invokeExactMethod("com.scully.korat.KoratMain", "run",
+                //                        new Object[] { stateSpaceXml } );
             }
             catch (Throwable e)
             {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-//            loader.printClasses(System.out);
+            //            loader.printClasses(System.out);
             loader = null;
             System.gc();
             System.gc();
@@ -303,7 +357,48 @@ public class StateSpaceWizard extends Wizard implements INewWizard
         {
             e.printStackTrace();
         }
-        return new ByteArrayInputStream(contents.getBytes());
+        return contents;
+    }
+
+    /**
+     * Returns a list of fully qualified classpath entries needed to run Korat
+     * @return
+     */
+    private List<String> getClasspath()
+    {
+        List<String> classpath = new ArrayList<String>();
+        try
+        {
+            IPath workspaceLocation = this.selection.getJavaProject().getProject().getWorkspace().getRoot()
+                    .getLocation();
+            //
+            String fullPath = null;
+            // TODO: determine which classpath entries are needed for running from plugin
+//			for (IClasspathEntry entry : cp)
+//            {
+//                IPath path = entry.getPath();
+//                fullPath = getFullPath(workspaceLocation, path);
+//                if (fullPath != null)
+//                {
+//                    classpath.add(fullPath);
+//                }
+//            }
+            IPath path = this.selection.getJavaProject().getOutputLocation();
+            fullPath = getFullPath(workspaceLocation, path);
+            if (fullPath != null)
+            {
+                classpath.add(fullPath);
+            }
+//            classPool.appendClassPath("C:/Documents and Settings/mscully/My Documents/UT/Archive/Verification and Validation/workspace/korattester/classes");
+//            classpath.add(new ClassClassPath(this.getClass()));
+        }
+        catch (JavaModelException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return classpath;
     }
 
     private String getFullPath(IPath workspaceLoc, IPath path)
