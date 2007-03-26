@@ -2,13 +2,16 @@ package com.scully.korat.wizards;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IPackageDeclaration;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.ui.IJavaElementSearchConstants;
 import org.eclipse.jdt.ui.JavaUI;
@@ -23,7 +26,6 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -49,9 +51,9 @@ public class NewStateSpaceWizPage extends WizardPage
 
     private Text repOkMethodText;
 
-    private Text sourceFolderText;
+    private Text targetSourceFolderText;
 
-    private Text packageNameText;
+    private String packageName;
 
     private WizTypeInfo wizTypeInfo;
 
@@ -107,14 +109,25 @@ public class NewStateSpaceWizPage extends WizardPage
         });
 
         // add Source folder
-        addLabel(container, "Source fol&der:");
-        this.sourceFolderText = new Text(container, SWT.BORDER | SWT.SINGLE);
-        addInputField(container, this.sourceFolderText, true, true).horizontalSpan = 2;
+        addLabel(container, "Target source fol&der:");
+        this.targetSourceFolderText = new Text(container, SWT.BORDER | SWT.SINGLE);
+        addInputField(container, this.targetSourceFolderText, true, true);
+        
+        // add Browse button for source folder
+        button = new Button(container, SWT.PUSH);
+        button.setText("Browse...");
+        button.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e)
+            {
+                handleSelectTargetSource();
+            }
+        });
+
 
         // add Package
-        addLabel(container, "&Package:");
-        this.packageNameText = new Text(container, SWT.BORDER | SWT.SINGLE);
-        addInputField(container, this.packageNameText, true, true).horizontalSpan = 2;
+//        addLabel(container, "&Package:");
+//        this.packageNameText = new Text(container, SWT.BORDER | SWT.SINGLE);
+//        addInputField(container, this.packageNameText, true, true).horizontalSpan = 2;
 
         initialize();
         dialogChanged();
@@ -170,8 +183,12 @@ public class NewStateSpaceWizPage extends WizardPage
         this.baseClassText.setText(this.wizTypeInfo.getType().getFullyQualifiedName());
         this.fileText.setText(this.wizTypeInfo.getType().getElementName() + ".xml");
         this.repOkMethodText.setText("repOk");
-        this.sourceFolderText.setText("/TestKoratPlugin/src");
-        this.packageNameText.setText(this.wizTypeInfo.getType().getPackageFragment().getElementName());
+        this.targetSourceFolderText.setText("/TestKoratPlugin/src");
+        if(this.wizTypeInfo.getType().getPackageFragment() != null)
+        {
+	        this.packageName = this.wizTypeInfo.getType().getPackageFragment().getElementName();
+        }
+                
     }
 
     public IType selectType() throws JavaModelException
@@ -195,7 +212,7 @@ public class NewStateSpaceWizPage extends WizardPage
         List<String> methodNames = new ArrayList<String>();
         
         // only use methods that return boolean and don't have any parameters
-        for (ListIterator<IMethod> iter = methods.listIterator(); iter.hasNext();)
+        for (Iterator<IMethod> iter = methods.iterator(); iter.hasNext();)
         {
             IMethod method = (IMethod) iter.next();
             String[] params = method.getParameterNames();
@@ -225,6 +242,39 @@ public class NewStateSpaceWizPage extends WizardPage
         return (String) selectedMethods[0];
     }
 
+    public String selectTargetSource() throws JavaModelException
+    {
+        IJavaProject project = this.wizTypeInfo.getType().getJavaProject();
+        List<IPackageFragmentRoot> roots = Arrays.asList(project.getPackageFragmentRoots());
+        List<String> sourceFolderNames = new ArrayList<String>();
+        for (Iterator iter = roots.iterator(); iter.hasNext();)
+        {
+            IPackageFragmentRoot root = (IPackageFragmentRoot) iter.next();
+            if(!root.isExternal() && root.getKind() == IPackageFragmentRoot.K_SOURCE)
+            {
+                sourceFolderNames.add(root.getPath().toPortableString());
+            }
+        }
+        // Create the list dialog
+        ListDialog dialog = new ListDialog(this.getShell());
+        dialog.setAddCancelButton(true);
+        dialog.setContentProvider(new ArrayContentProvider());
+        dialog.setLabelProvider(new LabelProvider());
+        dialog.setInput(sourceFolderNames);
+        dialog.setInitialSelections(new Object[] { this.targetSourceFolderText.getText() });
+        dialog.setTitle("Select Target Source Folder");
+        dialog.setMessage("Select the target source folder where the state space\nfile will be created.  If you have a separate source\nfolder for unit tests, this may be the preferred location.");
+        dialog.setHelpAvailable(false);
+        if (dialog.open() == IDialogConstants.CANCEL_ID)
+            return null;
+
+        Object[] selectedTargetSource = dialog.getResult();
+        if (selectedTargetSource == null || selectedTargetSource.length == 0)
+            return null;
+        return (String) selectedTargetSource[0];
+        
+    }
+
     /**
      * Uses the standard container selection dialog to choose the new value for
      * the container field.
@@ -244,16 +294,23 @@ public class NewStateSpaceWizPage extends WizardPage
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        //        ContainerSelectionDialog dialog = new ContainerSelectionDialog(getShell(), ResourcesPlugin.getWorkspace()
-        //                .getRoot(), false, "Select new file container");
-        //        if (dialog.open() == ContainerSelectionDialog.OK)
-        //        {
-        //            Object[] result = dialog.getResult();
-        //            if (result.length == 1)
-        //            {
-        //                this.sourceFolderText.setText(((Path) result[0]).toString());
-        //            }
-        //        }
+    }
+
+    private void handleSelectTargetSource()
+    {
+        try
+        {
+            String source = selectTargetSource();
+            if(source != null)
+            {
+	            this.targetSourceFolderText.setText(source);
+            }
+        }
+        catch (JavaModelException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -335,7 +392,7 @@ public class NewStateSpaceWizPage extends WizardPage
      */
     public String getPackageName()
     {
-        return packageNameText.getText();
+        return packageName;
     }
 
     /**
@@ -349,8 +406,8 @@ public class NewStateSpaceWizPage extends WizardPage
     /**
      * @return the sourceFolder
      */
-    public String getSourceFolder()
+    public String getTargetSourceFolder()
     {
-        return sourceFolderText.getText();
+        return targetSourceFolderText.getText();
     }
 } //  @jve:decl-index=0:visual-constraint="105,83"

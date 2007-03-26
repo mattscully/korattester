@@ -6,18 +6,17 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.NotFoundException;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -40,7 +39,6 @@ import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
@@ -117,15 +115,16 @@ public class StateSpaceWizard extends Wizard implements INewWizard
      */
     public boolean performFinish()
     {
-        final String containerName = newStateSpaceWizPage.getSourceFolder();
+        final String containerName = newStateSpaceWizPage.getTargetSourceFolder();
         final String fileName = newStateSpaceWizPage.getFileName();
+        final String packageName = newStateSpaceWizPage.getPackageName();
         collectPageData();
         IRunnableWithProgress op = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException
             {
                 try
                 {
-                    doFinish(containerName, fileName, monitor);
+                    doFinish(containerName, packageName, fileName, monitor);
                 }
                 catch (CoreException e)
                 {
@@ -160,7 +159,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
      * the editor on the newly created file.
      */
 
-    private void doFinish(String containerName, String fileName, IProgressMonitor monitor) throws CoreException
+    private void doFinish(String containerName, String packageName, String fileName, IProgressMonitor monitor) throws CoreException
     {
         // create a sample file
         monitor.beginTask("Creating " + fileName, 2);
@@ -171,6 +170,16 @@ public class StateSpaceWizard extends Wizard implements INewWizard
             throwCoreException("Container \"" + containerName + "\" does not exist.");
         }
         IContainer container = (IContainer) resource;
+        if(StringUtils.isNotBlank(packageName))
+        {
+            packageName = packageName.replace('.', '/');
+	        IFolder packageFolder = container.getFolder(new Path(packageName));
+	        if(!packageFolder.exists())
+	        {
+		        packageFolder.create(false, true, null);
+	        }
+            container = packageFolder;
+        }
         final IFile file = container.getFile(new Path(fileName));
         try
         {
@@ -187,6 +196,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
         }
         catch (IOException e)
         {
+            e.printStackTrace();
         }
         monitor.worked(1);
         monitor.setTaskName("Opening file for editing...");
@@ -248,7 +258,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
     private InputStream openContentStream()
     {
         String contents = getStateSpaceXmlUsingClassLoader();
-        getStateSpaceXmlUsingLauncher();
+//        getStateSpaceXmlUsingLauncher();
         return new ByteArrayInputStream(contents.getBytes());
     }
 
