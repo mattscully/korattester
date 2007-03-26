@@ -3,15 +3,13 @@
  */
 package com.scully.korat;
 
-import com.scully.korat.KoratEngine;
-import com.scully.korat.finitization.Predicate;
+import junit.framework.TestCase;
+
 import com.scully.korat.map.CandidateFieldDTO;
 import com.scully.korat.map.CandidateStateDTO;
 import com.scully.korat.map.StateFieldDTO;
 import com.scully.korat.map.StateObjectDTO;
 import com.scully.korat.map.TestStateSpaceDTO;
-
-import junit.framework.TestCase;
 
 /**
  * @author mscully
@@ -21,8 +19,6 @@ public class KoratBaseTest extends TestCase
 {
 
     KoratEngine korat;
-
-    Predicate predicate;
 
     TestStateSpaceDTO stateSpace;
 
@@ -134,11 +130,6 @@ public class KoratBaseTest extends TestCase
     public KoratEngine getKorat()
     {
         return korat;
-    }
-
-    public Predicate getPredicate()
-    {
-        return predicate;
     }
 
     /**
