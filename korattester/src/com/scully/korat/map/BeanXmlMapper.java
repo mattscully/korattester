@@ -22,8 +22,7 @@ public class BeanXmlMapper
         // create write and set basic properties
         BeanWriter beanWriter = new BeanWriter(writer);
 //        writer.getXMLIntrospector().getConfiguration().setAttributesForPrimitives(true);
-        // reading doesn't work with pretty print for some reason???
-//        beanWriter.enablePrettyPrint();
+        beanWriter.enablePrettyPrint();
         beanWriter.getBindingConfiguration().setMapIDs(false);
 
         // set a custom name mapper for attributes
