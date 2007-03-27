@@ -3,33 +3,30 @@ package com.scully.korat.test;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.SystemUtils;
 
 import com.scully.korat.KoratEngine;
+import com.scully.korat.MethodVerifier;
 import com.scully.korat.map.BeanXmlMapper;
 import com.scully.korat.map.CandidateStateDTO;
 import com.scully.korat.map.TestStateSpaceDTO;
 
-public class KoratTester<E> implements Iterable<E>
+
+public class KoratTester
 {
+    Class[] paramTypes;
+
     Object[] paramValues;
 
-    Method method;
+    String methodName;
 
-    Predicate predicate;
-
-    KoratEngine preState;
-
-    KoratEngine postState;
+    MethodVerifier methodVerifier;
 
     TestStateSpaceDTO stateSpace;
-
-    List<CandidateStateDTO> failedCandidates;
 
     public KoratTester(Class testClass)
     {
@@ -44,26 +41,24 @@ public class KoratTester<E> implements Iterable<E>
         {
             stateSpacePath = "/" + stateSpacePath;
         }
-
-        // deserialize the state space
         InputStreamReader reader = new InputStreamReader(this.getClass().getResourceAsStream(stateSpacePath));
         this.stateSpace = (TestStateSpaceDTO) BeanXmlMapper.readBean(reader, "TestStateSpaceDTO",
                 TestStateSpaceDTO.class);
-
-        // initialize a korat engine for both pre and post states
-        this.preState = new KoratEngine(stateSpace);
-        this.postState = new KoratEngine(stateSpace);
     }
 
     public boolean execute()
     {
-        // initialize failed candidates list
-        this.failedCandidates = new ArrayList<CandidateStateDTO>();
+        // TODO: shouldn't need to set this when instrumentation is done
+        KoratEngine.setPruning(false);
+
+        // initialize a korat engine for both pre and post states
+        KoratEngine preKorat = new KoratEngine(stateSpace);
+        KoratEngine postKorat = new KoratEngine(stateSpace);
 
         // set the pre/post objects
-        predicate.setPreObject(preState.getRootObject());
-        predicate.setPostObject(postState.getRootObject());
-        predicate.setParameters(this.paramValues);
+        methodVerifier.setPreObject(preKorat.getRootObject());
+        methodVerifier.setPostObject(postKorat.getRootObject());
+        methodVerifier.setValues(this.paramValues);
 
         // get the test candidates
         List candidateStates = this.stateSpace.getCandidateStates();
@@ -72,27 +67,26 @@ public class KoratTester<E> implements Iterable<E>
         boolean result = true;
         boolean singleResult = false;
 
+        // get the test Method object
+        Method method = getMethod(postKorat.getRootObject().getClass(), this.methodName, this.paramTypes);
+
         int count = 0;
         for (Iterator iter = candidateStates.iterator(); iter.hasNext(); count++)
         {
             CandidateStateDTO candidateState = (CandidateStateDTO) iter.next();
             // initialize the root object
-            preState.setCandidateState(candidateState);
-            postState.setCandidateState(candidateState);
+            preKorat.setCandidateState(candidateState);
+            postKorat.setCandidateState(candidateState);
             System.out.println("[" + count + "] = " + candidateState);
-            singleResult = testPostStateCandidate();
+            singleResult = testCandidate(method);
             if (!singleResult)
             {
-                this.failedCandidates.add(candidateState);
+                System.out.println("\tCandidate Test FAILED: Invariant failed for parameter(s): "
+                        + ArrayUtils.toString(this.paramValues));
             }
             result &= singleResult;
         }
         return result;
-    }
-
-    public Iterator<E> iterator()
-    {
-        return new FailedObjectIterator<E>(this.postState, this.failedCandidates);
     }
 
     /**
@@ -127,12 +121,15 @@ public class KoratTester<E> implements Iterable<E>
      * @param root
      * @param cv
      */
-    private boolean testPostStateCandidate()
+    //            testCandidate(postKorat.getRootObject(), method, paramValues);
+    private boolean testCandidate(Method testMethod)
     {
+        // get objects needed to create candidate input
+        //        Predicate pred = new Predicate(this.methodVerifier.getPostObject().getClass(), Predicate.REPOK);
         try
         {
             // invoke test subject
-            this.predicate.setResult(this.method.invoke(this.predicate.getPostObject(), this.paramValues));
+            this.methodVerifier.setResult(testMethod.invoke(this.methodVerifier.getPostObject(), this.paramValues));
         }
         catch (IllegalArgumentException e)
         {
@@ -147,38 +144,55 @@ public class KoratTester<E> implements Iterable<E>
             e.printStackTrace();
         }
         // verify predicate is true
-        return this.predicate.postCondition();
+        return this.methodVerifier.postCondition();
     }
 
-    public void setMethod(String methodName, Class[] paramTypes)
-    {
-        this.method = getMethod(this.postState.getRootObject().getClass(), methodName, paramTypes);
-    }
-
-    public Method getMethod()
-    {
-        return this.method;
-    }
-
+    /**
+     * @return the methodName
+     */
     public String getMethodName()
     {
-        return this.method.getName();
+        return methodName;
     }
 
     /**
-     * @return the predicate
+     * @param methodName the methodName to set
      */
-    public Predicate getMethodVerifier()
+    public void setMethodName(String methodName)
     {
-        return predicate;
+        this.methodName = methodName;
     }
 
     /**
-     * @param predicate the predicate to set
+     * @return the methodVerifier
      */
-    public void setPredicate(Predicate predicate)
+    public MethodVerifier getMethodVerifier()
     {
-        this.predicate = predicate;
+        return methodVerifier;
+    }
+
+    /**
+     * @param methodVerifier the methodVerifier to set
+     */
+    public void setMethodVerifier(MethodVerifier methodVerifier)
+    {
+        this.methodVerifier = methodVerifier;
+    }
+
+    /**
+     * @return the paramTypes
+     */
+    public Class[] getParamTypes()
+    {
+        return paramTypes;
+    }
+
+    /**
+     * @param paramTypes the paramTypes to set
+     */
+    public void setParamTypes(Class[] paramTypes)
+    {
+        this.paramTypes = paramTypes;
     }
 
     /**
@@ -195,29 +209,5 @@ public class KoratTester<E> implements Iterable<E>
     public void setParamValues(Object[] paramValues)
     {
         this.paramValues = paramValues;
-    }
-
-    /**
-     * Return a String representation of the failed states separated by the
-     * system's defined line separator.
-     */
-    @Override
-    public String toString()
-    {
-        StringBuilder failedString = new StringBuilder(50);
-        boolean isFirst = true;
-        for (E obj : this)
-        {
-            // skip first entry for line separator
-            if(!isFirst)
-            {
-	            failedString.append(SystemUtils.LINE_SEPARATOR);
-            }
-            
-            failedString.append(obj.toString());
-            isFirst = false;
-        }
-        return failedString.toString();
-
     }
 }

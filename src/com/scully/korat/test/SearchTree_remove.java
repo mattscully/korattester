@@ -81,27 +81,27 @@ public class SearchTree_remove {
 			scope, 0, scope, 1, scope);
 	}
 	
-//	public static void main(String[] args) {
-//	    // TODO: Define Finitization Scope
-//        TestStateSpaceDTO testStateSpace = createFiniteStateSpace(3);
-////	    Finitization f = finSearchTree(3, 0, 3, 1, 3);
-//	    
-//	    // remove method signature
-//	    String testMethod = "remove";
-//	    Class[] paramTypes = new Class[] { int.class };
-//	    // TODO: Define test parameters for inputs
-//	    Object[] paramValues = new Object[] { new Integer(1) };
-//		
-//	    // TODO: Choose Korat feature execution
-//	    KoratClient.setIsoMorphismBreaking(true);
-//	    KoratClient.populateTestCandidates(testStateSpace);
-//        System.out.println(BeanXmlMapper.beanToXml(testStateSpace));
-//	    KoratClient.setPruning(false);
-//        KoratClient.testMethod(testStateSpace, testMethod, paramTypes, paramValues);
-////	    KoratClient.getFiniteStateSpace(stateSpace, testMethod, paramTypes, paramValues);
-////		String serializePath = "c:/ut/korat-cvs/scope-4-noniso";
-////	    KoratClient.serializeInputs(f, serializePath);
-////		KoratClient.testSerializedObjects(f, testMethod, paramTypes, paramValues, serializePath);
-//	}
+	public static void main(String[] args) {
+	    // TODO: Define Finitization Scope
+        TestStateSpaceDTO testStateSpace = createFiniteStateSpace(3);
+//	    Finitization f = finSearchTree(3, 0, 3, 1, 3);
+	    
+	    // remove method signature
+	    String testMethod = "remove";
+	    Class[] paramTypes = new Class[] { int.class };
+	    // TODO: Define test parameters for inputs
+	    Object[] paramValues = new Object[] { new Integer(1) };
+		
+	    // TODO: Choose Korat feature execution
+	    KoratClient.setIsoMorphismBreaking(true);
+	    KoratClient.populateTestCandidates(testStateSpace);
+        System.out.println(BeanXmlMapper.beanToXml(testStateSpace));
+	    KoratClient.setPruning(false);
+        KoratClient.testMethod(testStateSpace, testMethod, paramTypes, paramValues);
+//	    KoratClient.getFiniteStateSpace(stateSpace, testMethod, paramTypes, paramValues);
+//		String serializePath = "c:/ut/korat-cvs/scope-4-noniso";
+//	    KoratClient.serializeInputs(f, serializePath);
+//		KoratClient.testSerializedObjects(f, testMethod, paramTypes, paramValues, serializePath);
+	}
     
 }

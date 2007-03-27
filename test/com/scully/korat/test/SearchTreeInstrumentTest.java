@@ -1,6 +1,7 @@
 package com.scully.korat.test;
 
 import com.scully.korat.KoratClient;
+import com.scully.korat.map.BeanXmlMapper;
 import com.scully.korat.map.TestStateSpaceDTO;
 
 import junit.framework.TestCase;

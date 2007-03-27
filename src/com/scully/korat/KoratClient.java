@@ -6,11 +6,13 @@
  */
 package com.scully.korat;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 
+import com.scully.korat.finitization.Predicate;
 import com.scully.korat.map.CandidateStateDTO;
 import com.scully.korat.map.TestStateSpaceDTO;
-
 
 
 /**
@@ -25,10 +27,6 @@ public class KoratClient
     /**
      * 
      */
-    
-    /* ONLY THESE TWO METHODS ARE REALLY USEFUL FOR THE ECLIPSE PLUGIN
-     * BUT THIS WAS IMPLEMENTED IN KoratMain
-     */ 
     public static void populateTestCandidates(TestStateSpaceDTO stateSpace)
     {
 	    populateTestCandidates(stateSpace, null);
@@ -40,87 +38,86 @@ public class KoratClient
         stateSpace.setCandidateStates(validStates);
         System.out.println("Generated " + validStates.size() + " valid states.");
     }
-    //*/
 
-//    public static void testMethod(TestStateSpaceDTO stateSpace, String testMethod, Class[] paramTypes,
-//            Object[] paramValues)
-//    {
-//        KoratEngine korat = new KoratEngine(stateSpace);
-//        List<CandidateStateDTO> candidateStates = stateSpace.getCandidateStates();
-//
-//        // get the test Method object
-//        Method method = getTestMethod(korat.getRootObject().getClass(), testMethod, paramTypes);
-//
-//        int count = 0;
-//        for(CandidateStateDTO candidateState : candidateStates)
-//        {
-//            // initialize the root object
-//            korat.setCandidateState(candidateState);
-//            System.out.printf("[%d] = %s%n", count, candidateState);
-//            testCandidate(korat.getRootObject(), method, paramValues);
-//        }
-//    }
-//
-//    /**
-//     * @param fin
-//     * @param testMethod
-//     * @param paramTypes
-//     * @param method
-//     * @return
-//     */
-//    private static Method getTestMethod(Class clazz, String testMethod, Class[] paramTypes)
-//    {
-//        Method method = null;
-//        try
-//        {
-//            method = clazz.getDeclaredMethod(testMethod, paramTypes);
-//            method.setAccessible(true);
-//        }
-//        catch (SecurityException e)
-//        {
-//            e.printStackTrace();
-//        }
-//        catch (NoSuchMethodException e)
-//        {
-//            e.printStackTrace();
-//        }
-//        return method;
-//    }
-//
-//    /**
-//     * @param fin
-//     * @param space
-//     * @param root
-//     * @param cv
-//     */
-//    private static void testCandidate(Object cv, Method method, Object[] params)
-//    {
-//        // get objects needed to create candidate input
-//        Predicate pred = new Predicate(cv.getClass(), Predicate.REPOK);
-//        try
-//        {
-//            // invoke test subject
-//            method.invoke(cv, params);
-//        }
-//        catch (IllegalArgumentException e)
-//        {
-//            e.printStackTrace();
-//        }
-//        catch (IllegalAccessException e)
-//        {
-//            e.printStackTrace();
-//        }
-//        catch (InvocationTargetException e)
-//        {
-//            e.printStackTrace();
-//        }
-//        // verify predicate is true
-//        if (!pred.invoke(cv))
-//        {
-//            System.out.println("\tCandidate Test FAILED: Invariant broken for parameter(s): " + 1);
-//        }
-//    }
-//
+    public static void testMethod(TestStateSpaceDTO stateSpace, String testMethod, Class[] paramTypes,
+            Object[] paramValues)
+    {
+        KoratEngine korat = new KoratEngine(stateSpace);
+        List<CandidateStateDTO> candidateStates = stateSpace.getCandidateStates();
+
+        // get the test Method object
+        Method method = getTestMethod(korat.getRootObject().getClass(), testMethod, paramTypes);
+
+        int count = 0;
+        for(CandidateStateDTO candidateState : candidateStates)
+        {
+            // initialize the root object
+            korat.setCandidateState(candidateState);
+            System.out.printf("[%d] = %s%n", count, candidateState);
+            testCandidate(korat.getRootObject(), method, paramValues);
+        }
+    }
+
+    /**
+     * @param fin
+     * @param testMethod
+     * @param paramTypes
+     * @param method
+     * @return
+     */
+    private static Method getTestMethod(Class clazz, String testMethod, Class[] paramTypes)
+    {
+        Method method = null;
+        try
+        {
+            method = clazz.getDeclaredMethod(testMethod, paramTypes);
+            method.setAccessible(true);
+        }
+        catch (SecurityException e)
+        {
+            e.printStackTrace();
+        }
+        catch (NoSuchMethodException e)
+        {
+            e.printStackTrace();
+        }
+        return method;
+    }
+
+    /**
+     * @param fin
+     * @param space
+     * @param root
+     * @param cv
+     */
+    private static void testCandidate(Object cv, Method method, Object[] params)
+    {
+        // get objects needed to create candidate input
+        Predicate pred = new Predicate(cv.getClass(), Predicate.REPOK);
+        try
+        {
+            // invoke test subject
+            method.invoke(cv, params);
+        }
+        catch (IllegalArgumentException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IllegalAccessException e)
+        {
+            e.printStackTrace();
+        }
+        catch (InvocationTargetException e)
+        {
+            e.printStackTrace();
+        }
+        // verify predicate is true
+        if (!pred.invoke(cv))
+        {
+            System.out.println("\tCandidate Test FAILED: Invariant broken for parameter(s): " + 1);
+        }
+    }
+
 //    /**
 //     * 
 //     */

@@ -1,11 +1,8 @@
 package com.scully.korat;
 
-import java.util.List;
-
 import org.apache.commons.lang.ArrayUtils;
 
 import com.scully.korat.map.BeanXmlMapper;
-import com.scully.korat.map.CandidateStateDTO;
 import com.scully.korat.map.TestStateSpaceDTO;
 
 public class KoratMain
@@ -35,16 +32,10 @@ public class KoratMain
             throw new IllegalArgumentException("Korat requires XML String passed to KoratMain");
         }
 
-        // read in the state space
         TestStateSpaceDTO stateSpace = (TestStateSpaceDTO) BeanXmlMapper.xmlToBean(stateSpaceXml, "TestStateSpaceDTO",
                 TestStateSpaceDTO.class);
         
-        // Find all valid states
-        KoratEngine korat = new KoratEngine(stateSpace, classpath);
-        List<CandidateStateDTO> validStates = korat.findAllValidStates();
-        stateSpace.setCandidateStates(validStates);
-        System.out.println("Generated States = " + validStates.size());
-        
+        KoratClient.populateTestCandidates(stateSpace, classpath);
         return BeanXmlMapper.beanToXml(stateSpace);
     }
 }

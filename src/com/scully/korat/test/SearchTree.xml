@@ -1216,7 +1216,7 @@
 </candidateFields>
 </candidateState>
 </candidateStates>
-<repOk>repOk</repOk>
+<repOk/>
 <rootClass>com.scully.korat.test.SearchTree</rootClass>
 <stateFields>
 <stateField>

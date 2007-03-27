@@ -5,8 +5,6 @@
 package com.scully.korat;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +14,7 @@ import java.util.Stack;
 
 import com.scully.korat.finitization.Finitization;
 import com.scully.korat.finitization.ObjField;
+import com.scully.korat.finitization.Predicate;
 import com.scully.korat.map.CandidateFieldDTO;
 import com.scully.korat.map.CandidateStateDTO;
 import com.scully.korat.map.TestStateSpaceDTO;
@@ -39,7 +38,7 @@ public class KoratEngine
         nf.setMaximumFractionDigits(3);
     }
 
-    Method predicate;
+    Predicate predicate;
 
     Object rootObject;
 
@@ -61,29 +60,12 @@ public class KoratEngine
     public KoratEngine(TestStateSpaceDTO stateSpace, String[] codeClasspath)
     {
         this.finitization = new Finitization(stateSpace, codeClasspath, PRUNING);
+        this.predicate = new Predicate(finitization.getRootClass(), Predicate.REPOK);
         this.rootObject = finitization.getRootObject();
         this.candidateState = new CandidateState(finitization.getSpace(), finitization.getObjFields());
         this.observer = finitization.getObserver();
         this.backtrackedRoot = false;
         this.dtoMap = new HashMap<String, ObjField>();
-        setPredicate(stateSpace.getRepOk());
-    }
-    
-    private void setPredicate(String repOk)
-    {
-        try
-        {
-            this.predicate = this.finitization.getRootClass().getDeclaredMethod(repOk);
-            this.predicate.setAccessible(true);
-        }
-        catch (SecurityException e)
-        {
-            e.printStackTrace();
-        }
-        catch (NoSuchMethodException e)
-        {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -108,7 +90,7 @@ public class KoratEngine
             count++;
 
             // execute "pred(root)" and update stack
-            boolean isValidState = observeExecution(accessedFieldsStack);
+            boolean isValidState = observeExecution(this.predicate, this.rootObject, accessedFieldsStack);
 //            System.out.println("Testing State: " + this.candidateState + " => " + (isValidState ? "ADDING" : ""));
             // if state is valid, add it to the list of valid inputs
             if (isValidState)
@@ -208,38 +190,23 @@ public class KoratEngine
      * Execute the predicate. In order to do pruning, this method would do field
      * monitoring and add accessed fields to the stack in the order they were
      * accessed
+     * 
+     * @param pred
+     *            Preditcate to be invoked
+     * @param root
+     *            The structure root
      * @param stack
      *            The stack of ObjFields - not used without pruning
-     * 
      * @return
      */
-    private boolean observeExecution(Stack stack)
+    private boolean observeExecution(Predicate pred, Object root, Stack stack)
     {
         // only observe executions if PRUNING is enabled
         if(PRUNING)
         {
 	        this.candidateState.setObservableIndexes();
         }
-        try
-        {
-            return ((Boolean) this.predicate.invoke(this.rootObject)).booleanValue();
-        }
-        catch (IllegalArgumentException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch (IllegalAccessException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch (InvocationTargetException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return false;
+        return pred.invoke(root);
     }
 
     /**
@@ -349,6 +316,14 @@ public class KoratEngine
             }
         }
         return null;
+    }
+
+    /**
+     * @return the predicate
+     */
+    public Predicate getPredicate()
+    {
+        return predicate;
     }
 
     /**
