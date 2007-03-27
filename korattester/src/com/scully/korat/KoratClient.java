@@ -38,7 +38,7 @@ public class KoratClient
         KoratEngine korat = new KoratEngine(stateSpace, codeClasspath);
         List<CandidateStateDTO> validStates = korat.findAllValidStates();
         stateSpace.setCandidateStates(validStates);
-        System.out.println("Generated " + validStates.size() + " valid states.");
+//        System.out.println("Generated " + validStates.size() + " valid states.");
     }
     //*/
 

@@ -199,21 +199,21 @@ public class StateSpaceWizard extends Wizard implements INewWizard
             e.printStackTrace();
         }
         monitor.worked(1);
-        monitor.setTaskName("Opening file for editing...");
-        getShell().getDisplay().asyncExec(new Runnable() {
-            public void run()
-            {
-                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                try
-                {
-                    IDE.openEditor(page, file, true);
-                }
-                catch (PartInitException e)
-                {
-                }
-            }
-        });
-        monitor.worked(1);
+//        monitor.setTaskName("Opening file for editing...");
+//        getShell().getDisplay().asyncExec(new Runnable() {
+//            public void run()
+//            {
+//                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+//                try
+//                {
+//                    IDE.openEditor(page, file, true);
+//                }
+//                catch (PartInitException e)
+//                {
+//                }
+//            }
+//        });
+//        monitor.worked(1);
     }
 
     private void collectPageData()
@@ -336,9 +336,9 @@ public class StateSpaceWizard extends Wizard implements INewWizard
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            System.out.println("var names: " + ArrayUtils.toString(JavaCore.getClasspathVariableNames()));
-            System.out.println("classpath: " + classpath);
-            System.out.println("classpath: " + classPool);
+//            System.out.println("var names: " + ArrayUtils.toString(JavaCore.getClasspathVariableNames()));
+//            System.out.println("classpath: " + classpath);
+//            System.out.println("classpath: " + classPool);
             // perhaps classes are getting loaded in this parent loader???
             //            Loader loader = new Loader(this.getClass().getClassLoader(), new ClassPool(true));
             Loader loader = new Loader(this.getClass().getClassLoader(), classPool);

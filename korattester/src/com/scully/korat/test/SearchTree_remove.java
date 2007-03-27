@@ -1,8 +1,6 @@
 package com.scully.korat.test;
 
 
-import com.scully.korat.KoratClient;
-import com.scully.korat.map.BeanXmlMapper;
 import com.scully.korat.map.StateSpaceBuilder;
 import com.scully.korat.map.TestStateSpaceDTO;
 
@@ -71,6 +69,9 @@ public class SearchTree_remove {
         
         // value
         stateSpace.addStateField("value", int.class.getName(), "com.scully.korat.test.SearchTree$Node", MIN_Node_value, MAX_Node_value);
+        
+        // add repOk method name.
+        stateSpace.setRepOk("repOk");
         
         return stateSpace.getStateSpace();
     }

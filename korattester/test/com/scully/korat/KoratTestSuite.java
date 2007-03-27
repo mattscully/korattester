@@ -22,7 +22,8 @@ public class KoratTestSuite
         suite.addTestSuite(StateSpaceBeanTest.class);
         suite.addTestSuite(BeanXmlMapperTest.class);
         suite.addTestSuite(InstrumenterTest.class);
-        suite.addTestSuite(SearchTreeInstrumentTest.class);
+        suite.addTestSuite(KoratMainTest.class);
+//        suite.addTestSuite(SearchTreeInstrumentTest.class);
         //$JUnit-END$
         return suite;
     }

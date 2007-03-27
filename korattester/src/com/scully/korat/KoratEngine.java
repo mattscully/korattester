@@ -61,12 +61,12 @@ public class KoratEngine
     public KoratEngine(TestStateSpaceDTO stateSpace, String[] codeClasspath)
     {
         this.finitization = new Finitization(stateSpace, codeClasspath, PRUNING);
+        setPredicate(stateSpace.getRepOk());
         this.rootObject = finitization.getRootObject();
         this.candidateState = new CandidateState(finitization.getSpace(), finitization.getObjFields());
         this.observer = finitization.getObserver();
         this.backtrackedRoot = false;
         this.dtoMap = new HashMap<String, ObjField>();
-        setPredicate(stateSpace.getRepOk());
     }
     
     private void setPredicate(String repOk)
@@ -164,8 +164,8 @@ public class KoratEngine
         }
         while (!accessedFieldsStack.isEmpty()); // end do
 
-        System.out.println("Total Considered Candidates: " + count);
-        System.out.println("Total Time (sec):  " + nf.format((System.currentTimeMillis() - stime) / 1000.0D));
+//        System.out.println("Total Considered Candidates: " + count);
+//        System.out.println("Total Time (sec):  " + nf.format((System.currentTimeMillis() - stime) / 1000.0D));
 
         return validStates;
     }

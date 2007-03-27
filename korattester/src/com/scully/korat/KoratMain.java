@@ -43,7 +43,7 @@ public class KoratMain
         KoratEngine korat = new KoratEngine(stateSpace, classpath);
         List<CandidateStateDTO> validStates = korat.findAllValidStates();
         stateSpace.setCandidateStates(validStates);
-        System.out.println("Generated States = " + validStates.size());
+//        System.out.println("Generated States = " + validStates.size());
         
         return BeanXmlMapper.beanToXml(stateSpace);
     }

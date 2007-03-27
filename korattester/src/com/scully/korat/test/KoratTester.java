@@ -21,7 +21,7 @@ public class KoratTester<E> implements Iterable<E>
 
     Method method;
 
-    Predicate predicate;
+    Predicate<E> predicate;
 
     KoratEngine preState;
 
@@ -39,6 +39,9 @@ public class KoratTester<E> implements Iterable<E>
 
     public KoratTester(String stateSpacePath)
     {
+        // prevent instrumentation for testing
+        KoratEngine.setPruning(false);
+        
         // normalize the path
         if (!stateSpacePath.startsWith("/"))
         {
@@ -55,14 +58,17 @@ public class KoratTester<E> implements Iterable<E>
         this.postState = new KoratEngine(stateSpace);
     }
 
+    // KoratEngine cannot use generics because it must remain object agnostic
+    // during instrumentation.
+    @SuppressWarnings("unchecked")
     public boolean execute()
     {
         // initialize failed candidates list
         this.failedCandidates = new ArrayList<CandidateStateDTO>();
 
         // set the pre/post objects
-        predicate.setPreObject(preState.getRootObject());
-        predicate.setPostObject(postState.getRootObject());
+        predicate.setPreObject((E)preState.getRootObject());
+        predicate.setPostObject((E)postState.getRootObject());
         predicate.setParameters(this.paramValues);
 
         // get the test candidates
@@ -79,7 +85,7 @@ public class KoratTester<E> implements Iterable<E>
             // initialize the root object
             preState.setCandidateState(candidateState);
             postState.setCandidateState(candidateState);
-            System.out.println("[" + count + "] = " + candidateState);
+//            System.out.println("[" + count + "] = " + candidateState);
             singleResult = testPostStateCandidate();
             if (!singleResult)
             {
@@ -168,7 +174,7 @@ public class KoratTester<E> implements Iterable<E>
     /**
      * @return the predicate
      */
-    public Predicate getMethodVerifier()
+    public Predicate<E> getMethodVerifier()
     {
         return predicate;
     }
@@ -176,7 +182,7 @@ public class KoratTester<E> implements Iterable<E>
     /**
      * @param predicate the predicate to set
      */
-    public void setPredicate(Predicate predicate)
+    public void setPredicate(Predicate<E> predicate)
     {
         this.predicate = predicate;
     }

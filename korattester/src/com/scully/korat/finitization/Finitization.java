@@ -334,7 +334,7 @@ public class Finitization
             }
             field.setAccessible(true);
             ObjField objField = new ObjField(object, field);
-            System.out.println("Finitization.createObjFields ->  fieldName: " + field.getName());
+//            System.out.println("Finitization.createObjFields ->  fieldName: " + field.getName());
             addObjFieldByName(field, objField);
             this.fieldOrdering.add(objField);
         }
@@ -429,7 +429,7 @@ public class Finitization
 
                 createObjFields(o);
                 objects.add(o);
-                System.out.println("Finitization.createObjects: " + objClass + "[" + i + "] = " + o);
+//                System.out.println("Finitization.createObjects: " + objClass + "[" + i + "] = " + o);
             }
         }
         catch (InstantiationException e)
@@ -465,7 +465,7 @@ public class Finitization
      */
     public void set(Field field, FinSet finSet)
     {
-        System.out.println("Finitization.set ->  fieldName: " + field.getName());
+//        System.out.println("Finitization.set ->  fieldName: " + field.getName());
         // get the class domain indices for this field
         ClassDomainIndex[] classDomainIndices = finSet.getClassDomainIndices();
         FieldDomain fieldDomain = new FieldDomain(classDomainIndices);
