@@ -14,7 +14,7 @@ import java.util.List;
  */
 public abstract class FinSet
 {
-    List classDomainIndices = new ArrayList();
+    List<ClassDomainIndex> classDomainIndices = new ArrayList<ClassDomainIndex>();
     
     
     public void addClassDomainIndex(ClassDomainIndex classDomainIndex)
@@ -24,7 +24,7 @@ public abstract class FinSet
     
     public ClassDomainIndex[] getClassDomainIndices()
     {
-        return (ClassDomainIndex[]) this.classDomainIndices.toArray(new ClassDomainIndex[0]);
+        return this.classDomainIndices.toArray(new ClassDomainIndex[0]);
     }
 
 }

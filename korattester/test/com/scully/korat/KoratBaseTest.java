@@ -77,6 +77,14 @@ public class KoratBaseTest extends TestCase
         stateField.setMin(MIN_size);
         stateField.setMax(MAX_size);
         testStateSpace.addStateField(stateField);
+        // bool
+        stateField = new StateFieldDTO();
+        stateField.setName("bool");
+        stateField.setParentClass("com.scully.korat.test.SearchTree");
+        stateField.setType(boolean.class.getName());
+        stateField.setMin(0);
+        stateField.setMax(1);
+        testStateSpace.addStateField(stateField);
 
         // SearchTree$Node
         // left

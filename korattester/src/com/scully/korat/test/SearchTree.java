@@ -8,6 +8,8 @@ public class SearchTree implements Serializable
 	Node root; // root node
 
 	int size; // number of nodes in the tree
+    
+    boolean bool;
 
 	public static class Node implements Serializable
 	{
@@ -113,6 +115,9 @@ public class SearchTree implements Serializable
 	}
 
 	/*@ pure @*/ boolean repOk() {
+        // test boolean flag
+        if(!this.bool)
+            return false;
 		// checks that empty tree has size zero
 		if (root == null)
 			return size == 0;

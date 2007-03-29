@@ -5,10 +5,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.IPackageDeclaration;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
@@ -41,7 +39,7 @@ import org.eclipse.ui.dialogs.SelectionDialog;
  * OR with the extension that matches the expected one (xml).
  */
 
-public class NewStateSpaceWizPage extends WizardPage
+public class NewStateSpacePage extends WizardPage
 {
     //    private Text containerText;
 
@@ -62,7 +60,7 @@ public class NewStateSpaceWizPage extends WizardPage
      * 
      * @param pageName
      */
-    public NewStateSpaceWizPage(String pageName, WizTypeInfo wizTypeInfo)
+    public NewStateSpacePage(String pageName, WizTypeInfo wizTypeInfo)
     {
         super(pageName);
         this.wizTypeInfo = wizTypeInfo;
@@ -93,33 +91,33 @@ public class NewStateSpaceWizPage extends WizardPage
         this.fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
         addInputField(container, this.fileText, true, true).horizontalSpan = 2;
 
-        // add RepOk
-        addLabel(container, "&RepOk Method:");
-        this.repOkMethodText = new Text(container, SWT.BORDER | SWT.SINGLE);
-        addInputField(container, this.repOkMethodText, false, true);
-
-        // add Browse button for RepOk method
-        Button button = new Button(container, SWT.PUSH);
-        button.setText("Select Method...");
-        button.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e)
-            {
-                handleSelectMethod();
-            }
-        });
-
         // add Source folder
         addLabel(container, "Target source fol&der:");
         this.targetSourceFolderText = new Text(container, SWT.BORDER | SWT.SINGLE);
         addInputField(container, this.targetSourceFolderText, true, true);
         
         // add Browse button for source folder
-        button = new Button(container, SWT.PUSH);
+        Button button = new Button(container, SWT.PUSH);
         button.setText("Browse...");
         button.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e)
             {
                 handleSelectTargetSource();
+            }
+        });
+
+        // add RepOk
+        addLabel(container, "&RepOk Method:");
+        this.repOkMethodText = new Text(container, SWT.BORDER | SWT.SINGLE);
+        addInputField(container, this.repOkMethodText, false, true);
+
+        // add Browse button for RepOk method
+        button = new Button(container, SWT.PUSH);
+        button.setText("Method...");
+        button.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e)
+            {
+                handleSelectMethod();
             }
         });
 

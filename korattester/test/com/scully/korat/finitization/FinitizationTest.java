@@ -76,7 +76,7 @@ public class FinitizationTest extends TestCase
      */
     public void testFinitizationObjFieldsCreated()
     {
-        int expectedSize = 2;
+        int expectedSize = 3;
         assertNotNull("objFields for Finitization are null", this.finitization.objFieldsByName);
         assertEquals("objFields size does not match for Finitization.", expectedSize, this.finitization.objFieldsByName
                 .size());

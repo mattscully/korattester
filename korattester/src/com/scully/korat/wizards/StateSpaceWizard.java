@@ -59,14 +59,14 @@ import com.scully.korat.map.StateSpaceBuilder;
  * (a folder or a project) is selected in the workspace 
  * when the wizard is opened, it will accept it as the target
  * container. The wizard creates one file with the extension
- * "xml". If a sample multi-newStateSpaceWizPage editor (also available
+ * "xml". If a sample multi-newStateSpacePage editor (also available
  * as a template) is registered for the same extension, it will
  * be able to open it.
  */
 
 public class StateSpaceWizard extends Wizard implements INewWizard
 {
-    private NewStateSpaceWizPage newStateSpaceWizPage;
+    private NewStateSpacePage newStateSpacePage;
 
     private DefineObjPoolsPage defineObjPoolsPage;
 
@@ -89,16 +89,16 @@ public class StateSpaceWizard extends Wizard implements INewWizard
     }
 
     /**
-     * Adding the newStateSpaceWizPage to the wizard.
+     * Adding the newStateSpacePage to the wizard.
      */
 
     public void addPages()
     {
         this.wizTypeInfo = new WizTypeInfo(this.selection);
-        this.newStateSpaceWizPage = new NewStateSpaceWizPage("stateSpacePage", this.wizTypeInfo);
+        this.newStateSpacePage = new NewStateSpacePage("stateSpacePage", this.wizTypeInfo);
         this.defineObjPoolsPage = new DefineObjPoolsPage("objectPoolPage", this.wizTypeInfo);
         this.defineNativeFieldRangesPage = new DefineNativeFieldRangesPage("primitiveFieldRangesPage", this.wizTypeInfo);
-        addPage(this.newStateSpaceWizPage);
+        addPage(this.newStateSpacePage);
         addPage(this.defineObjPoolsPage);
         addPage(this.defineNativeFieldRangesPage);
     }
@@ -115,9 +115,9 @@ public class StateSpaceWizard extends Wizard implements INewWizard
      */
     public boolean performFinish()
     {
-        final String containerName = newStateSpaceWizPage.getTargetSourceFolder();
-        final String fileName = newStateSpaceWizPage.getFileName();
-        final String packageName = newStateSpaceWizPage.getPackageName();
+        final String containerName = newStateSpacePage.getTargetSourceFolder();
+        final String fileName = newStateSpacePage.getFileName();
+        final String packageName = newStateSpacePage.getPackageName();
         collectPageData();
         IRunnableWithProgress op = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) throws InvocationTargetException
@@ -219,7 +219,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
     private void collectPageData()
     {
         // set the root
-        this.stateSpaceBuilder.setRootClass(this.newStateSpaceWizPage.getBaseClass());
+        this.stateSpaceBuilder.setRootClass(this.newStateSpacePage.getBaseClass());
 
         // ==> create StateObjects
         for (String usedType : this.wizTypeInfo.getUsedTypes())
@@ -249,7 +249,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
         }
 
         // ==> set repOk
-        this.stateSpaceBuilder.setRepOk(this.newStateSpaceWizPage.getRepOkMethod());
+        this.stateSpaceBuilder.setRepOk(this.newStateSpacePage.getRepOkMethod());
     }
 
     /**

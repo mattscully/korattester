@@ -105,37 +105,15 @@ public class Finitization
 
             if (instrument)
             {
-                //                // create the class loader
-                //                if (codeClasspath != null && codeClasspath.length > 0)
-                //                {
-                //                    try
-                //                    {
-                //                        List<URL> paths = new ArrayList<URL>();
-                //                        for (String path : codeClasspath)
-                //                        {
-                //                            paths.add(new File(path).toURL());
-                //                        }
-                //                        URL[] classpathURLs = paths.toArray(new URL[]{});
-                //                        this.koratLoader = new URLClassLoader(classpathURLs, this.getClass().getClassLoader());
-                //                    }
-                //                    catch (MalformedURLException e)
-                //                    {
-                //                        // TODO Auto-generated catch block
-                //                        e.printStackTrace();
-                //                    }
-                //                }
-
                 // instrument the state space
                 instrumenter = new Instrumenter(testStateSpaceDTO, codeClasspath);
                 instrumenter.instrument();
-                //                this.rootClass = Class.forName(testStateSpaceDTO.getRootClass());
-                this.rootClass = this.instrumenter.lookup(testStateSpaceDTO.getRootClass());
+                this.rootClass = Class.forName(testStateSpaceDTO.getRootClass());
                 this.rootObject = this.rootClass.newInstance();
                 // register the observer with the new object
                 IKoratObservable observable = (IKoratObservable) this.rootObject;
                 
-                // this.observer = new KoratObserver();
-                this.observer = (KoratObserver) this.instrumenter.lookup("com.scully.korat.KoratObserver").newInstance();
+                 this.observer = new KoratObserver();
                 observable.$kor_setObserver(observer);
             }
             else
@@ -148,7 +126,6 @@ public class Finitization
             createObjFields(this.rootObject);
 
             // create Object types in state space
-            //            StateObjectDTO[] stateObjects = testStateSpaceDTO.getStateObjects();
             List<StateObjectDTO> stateObjects = testStateSpaceDTO.getStateObjects();
             Map<String, ObjSet> objSets = new HashMap<String, ObjSet>();
             for (StateObjectDTO stateObjectDTO : stateObjects)
@@ -160,19 +137,8 @@ public class Finitization
                 }
                 objSets.put(stateObjectDTO.getType(), objSet);
             }
-            //            for (int i = 0; i < stateObjects.length; i++)
-            //            {
-            //                StateObjectDTO stateObjectDTO = stateObjects[i];
-            //                ObjSet objSet = this.createObjects(stateObjectDTO.getType(), stateObjectDTO.getQuantity());
-            //                if(stateObjectDTO.isIncludeNullFlag())
-            //                {
-            //                    objSet.add(null);
-            //                }
-            //                objSets.put(stateObjectDTO.getType(), objSet);
-            //            }
 
             // map fields to FinSets
-            //            StateFieldDTO[] stateFields = testStateSpaceDTO.getStateFields();
             List<StateFieldDTO> stateFields = testStateSpaceDTO.getStateFields();
             for (StateFieldDTO stateField : stateFields)
             {
@@ -187,9 +153,9 @@ public class Finitization
                 {
                     this.set(field, objSets.get(type.getName()));
                 }
-                // TODO: Implement boolean
                 else if (type.equals(boolean.class))
                 {
+                    this.set(field, new BooleanSet(stateField.getMin(), stateField.getMax()));
                 }
                 else if (type.equals(byte.class))
                 {
@@ -218,51 +184,6 @@ public class Finitization
                     this.set(field, new DoubleSet((double) stateField.getMin(), (double) stateField.getMax()));
                 }
             }
-            //            for (int i = 0; i < stateFields.length; i++)
-            //            {
-            //                StateFieldDTO stateField = stateFields[i];
-            //                Class parent = Class.forName(stateField.getParentClass());
-            //                Field field = parent.getDeclaredField(stateField.getName());
-            //                Class type = field.getType();
-            //                if(type.equals(int.class))
-            //                {
-            //                    this.set(field, new IntSet(stateField.getMin(), stateField.getMax()));
-            //                }
-            //                else if(objSets.containsKey(type.getName()))
-            //                {
-            //                    this.set(field, (FinSet) objSets.get(type.getName()));
-            //                }
-            //                // TODO: Implement boolean
-            //                else if(type.equals(boolean.class))
-            //                {
-            //                }
-            //                else if(type.equals(byte.class))
-            //                {
-            //                    this.set(field, new ByteSet((byte) stateField.getMin(), (byte) stateField.getMax()));
-            //                }
-            //                // TODO: Implement char
-            //                else if(type.equals(char.class))
-            //                {
-            //                }
-            //                else if(type.equals(short.class))
-            //                {
-            //                    this.set(field, new ShortSet((short) stateField.getMin(), (short) stateField.getMax()));
-            //                }
-            //                else if(type.equals(long.class))
-            //                {
-            //                    // TODO: handle long type
-            //                    this.set(field, new LongSet(stateField.getMin(), stateField.getMax()));
-            //                }
-            //                // TODO: Implement FloatSet
-            //                else if(type.equals(float.class))
-            //                {
-            //                }
-            //                else if(type.equals(double.class))
-            //                {
-            //                    // TODO: handle double type
-            //                    this.set(field, new DoubleSet((double) stateField.getMin(),(double) stateField.getMax()));
-            //                }
-            //            }
         }
         catch (ClassNotFoundException e)
         {
@@ -383,15 +304,7 @@ public class Finitization
         Class c = null;
         try
         {
-            //            c = Class.forName(objName);
-            if (this.instrument)
-            {
-                c = this.instrumenter.lookup(objName);
-            }
-            else
-            {
-                c = Class.forName(objName);
-            }
+            c = Class.forName(objName);
         }
         catch (ClassNotFoundException e)
         {

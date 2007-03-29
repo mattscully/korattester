@@ -102,7 +102,7 @@ public class KoratEngine
         
         int count = 0; // count of considered CVs
 
-        long stime = System.currentTimeMillis();
+//        long stime = System.currentTimeMillis();
         do
         {
             count++;
@@ -269,7 +269,7 @@ public class KoratEngine
         Field[] fields = rootClass.getDeclaredFields();
         for (Field field : fields)
         {
-            // ignore JML instrumented fields
+            // ignore JML and Korat instrumented fields
             if (field.getName().startsWith("rac$") || field.getName().startsWith("$kor_"))
             {
                 continue;
@@ -296,11 +296,6 @@ public class KoratEngine
         }
     }
 
-    public static void setIsoMorphismBreaking(boolean flag)
-    {
-        ISOMORPHISM_BREAKING = flag;
-    }
-    
     public static void setPruning(boolean flag)
     {
         PRUNING = flag;
@@ -313,7 +308,6 @@ public class KoratEngine
     public void setCandidateState(CandidateStateDTO candidateState)
     {
         List<CandidateFieldDTO> fields = candidateState.getCandidateFields();
-//        for (Iterator iter = fields.iterator(); iter.hasNext();)
         for (CandidateFieldDTO field : fields)
         {
             ObjField objField = this.dtoMap.get(field.getFieldId());

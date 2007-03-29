@@ -36,7 +36,7 @@ public class CandidateStateTest extends KoratBaseTest
     public void testInitStateValueIndexes()
     {
         // assert correct size
-        assertEquals("Wrong number of fields in map.", 11, this.candidateState.getStateValueIndexes().size());
+        assertEquals("Wrong number of fields in map.", 12, this.candidateState.getStateValueIndexes().size());
 
         // assert correct values
         Collection values = this.candidateState.getStateValueIndexes().values();
@@ -85,12 +85,20 @@ public class CandidateStateTest extends KoratBaseTest
         // set random indexes
         // indexes from 0 to 2 will be valid for all fields (since 'value' only
         // has 3)
+        // indexes for booleans must be 0 or 1
         ObjField field = null;
         int index = 0;
         for (int i = 0; i < this.candidateState.stateFields.length; i++)
         {
             field = this.candidateState.stateFields[i];
-            index = RandomUtils.nextInt(3);
+            if(boolean.class.equals(field.getField().getType()))
+            {
+	            index = RandomUtils.nextInt(2);
+            }
+            else
+            {
+	            index = RandomUtils.nextInt(3);
+            }
             // store indexes for later comparison
             stateValueIndexes.put(field, new Integer(index));
             // call the method

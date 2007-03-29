@@ -60,6 +60,9 @@ public class SearchTree_remove {
         // size
         stateSpace.addStateField("size", int.class.getName(), "com.scully.korat.test.SearchTree", MIN_size, MAX_size);
 
+        // bool
+        stateSpace.addStateField("bool", boolean.class.getName(), "com.scully.korat.test.SearchTree", 0, 1);
+
         // SearchTree$Node
         // left
         stateSpace.addStateField("left", "com.scully.korat.test.SearchTree$Node", "com.scully.korat.test.SearchTree$Node");
@@ -77,23 +80,23 @@ public class SearchTree_remove {
     }
 
 	public static TestStateSpaceDTO createFiniteStateSpace(int scope) {
-	    // TODO: Verify helper scope
+	    // TO DO: Verify helper scope
 		return createFiniteStateSpace(
 			scope, 0, scope, 1, scope);
 	}
 	
 //	public static void main(String[] args) {
-//	    // TODO: Define Finitization Scope
+//	    // TO DO: Define Finitization Scope
 //        TestStateSpaceDTO testStateSpace = createFiniteStateSpace(3);
 ////	    Finitization f = finSearchTree(3, 0, 3, 1, 3);
 //	    
 //	    // remove method signature
 //	    String testMethod = "remove";
 //	    Class[] paramTypes = new Class[] { int.class };
-//	    // TODO: Define test parameters for inputs
+//	    // TO DO: Define test parameters for inputs
 //	    Object[] paramValues = new Object[] { new Integer(1) };
 //		
-//	    // TODO: Choose Korat feature execution
+//	    // TO DO: Choose Korat feature execution
 //	    KoratClient.setIsoMorphismBreaking(true);
 //	    KoratClient.populateTestCandidates(testStateSpace);
 //        System.out.println(BeanXmlMapper.beanToXml(testStateSpace));
