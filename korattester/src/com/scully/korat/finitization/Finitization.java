@@ -276,23 +276,23 @@ public class Finitization
         this.objFieldsByName.put(field, objFieldList);
     }
 
-    /**
-     * @param name
-     * @return
-     */
-    String getSimpleName(String name)
-    {
-        // sample class name:  test.reflect.Node$InnerNode
-        String simpleName = name;
-        int lastDotIndex = name.lastIndexOf('.');
-        int lastDollarIndex = name.lastIndexOf('$');
-        int lastPartIndex = Math.max(lastDotIndex, lastDollarIndex);
-        if (lastPartIndex > 0)
-        {
-            simpleName = name.substring(lastPartIndex + 1);
-        }
-        return simpleName;
-    }
+//    /**
+//     * @param name
+//     * @return
+//     */
+//    String getSimpleName(String name)
+//    {
+//        // sample class name:  test.reflect.Node$InnerNode
+//        String simpleName = name;
+//        int lastDotIndex = name.lastIndexOf('.');
+//        int lastDollarIndex = name.lastIndexOf('$');
+//        int lastPartIndex = Math.max(lastDotIndex, lastDollarIndex);
+//        if (lastPartIndex > 0)
+//        {
+//            simpleName = name.substring(lastPartIndex + 1);
+//        }
+//        return simpleName;
+//    }
 
     /**
      * @param string

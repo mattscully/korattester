@@ -124,32 +124,32 @@ public class FinitizationTest extends TestCase
         }
     }
 
-    /**
-     * Test method for
-     * {@link com.scully.korat.finitization.Finitization#getSimpleName(String)}.
-     * 
-     * sample class name: test.reflect.Node$InnerNode
-     */
-    public void testGetSimpleName()
-    {
-        String name = "test.reflect.Node$InnerNode";
-        String expectedSimpleName = "InnerNode";
-
-        String simpleName = this.finitization.getSimpleName(name);
-        assertEquals("Simple name failed", expectedSimpleName, simpleName);
-
-        name = "Node$InnerNode";
-        simpleName = this.finitization.getSimpleName(name);
-        assertEquals("Simple name failed", expectedSimpleName, simpleName);
-
-        name = "test.reflect.InnerNode";
-        simpleName = this.finitization.getSimpleName(name);
-        assertEquals("Simple name failed", expectedSimpleName, simpleName);
-
-        name = "InnerNode";
-        simpleName = this.finitization.getSimpleName(name);
-        assertEquals("Simple name failed", expectedSimpleName, simpleName);
-    }
+//    /**
+//     * Test method for
+//     * {@link com.scully.korat.finitization.Finitization#getSimpleName(String)}.
+//     * 
+//     * sample class name: test.reflect.Node$InnerNode
+//     */
+//    public void testGetSimpleName()
+//    {
+//        String name = "test.reflect.Node$InnerNode";
+//        String expectedSimpleName = "InnerNode";
+//
+//        String simpleName = this.finitization.getSimpleName(name);
+//        assertEquals("Simple name failed", expectedSimpleName, simpleName);
+//
+//        name = "Node$InnerNode";
+//        simpleName = this.finitization.getSimpleName(name);
+//        assertEquals("Simple name failed", expectedSimpleName, simpleName);
+//
+//        name = "test.reflect.InnerNode";
+//        simpleName = this.finitization.getSimpleName(name);
+//        assertEquals("Simple name failed", expectedSimpleName, simpleName);
+//
+//        name = "InnerNode";
+//        simpleName = this.finitization.getSimpleName(name);
+//        assertEquals("Simple name failed", expectedSimpleName, simpleName);
+//    }
 
     /**
      * Test method for
