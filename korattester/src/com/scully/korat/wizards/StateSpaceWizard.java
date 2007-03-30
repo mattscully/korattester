@@ -12,7 +12,6 @@ import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.NotFoundException;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -30,7 +29,6 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
@@ -42,11 +40,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWizard;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 
 import com.scully.korat.instrument.Loader;
 import com.scully.korat.map.BeanXmlMapper;
@@ -236,6 +230,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
             {
                 field.setMin(this.defineNativeFieldRangesPage.getFieldMin(field));
                 field.setMax(this.defineNativeFieldRangesPage.getFieldMax(field));
+                field.setArraySize(this.defineNativeFieldRangesPage.getFieldSize(field));
                 this.stateSpaceBuilder.addStateField(field);
             }
         }

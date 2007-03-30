@@ -25,6 +25,8 @@ public class DefineNativeFieldRangesPage extends WizardPage
 
     private Map<String, Control> fieldRangeMaxMap = new HashMap<String, Control>();
 
+    private Map<String, Control> fieldArrayMap = new HashMap<String, Control>();
+
     public DefineNativeFieldRangesPage(String pageName, WizTypeInfo wizTypeInfo)
     {
         super(pageName);
@@ -41,7 +43,7 @@ public class DefineNativeFieldRangesPage extends WizardPage
         Composite container = new Composite(parent, SWT.NULL);
         GridLayout layout = new GridLayout();
         container.setLayout(layout);
-        layout.numColumns = 5;
+        layout.numColumns = 7;
         layout.verticalSpacing = 9;
 
         Map<String, List<StateFieldDTO>> primitiveFields = this.wizTypeInfo.getPrimitiveFields();
@@ -49,7 +51,7 @@ public class DefineNativeFieldRangesPage extends WizardPage
         for (String parentType : primitiveFields.keySet())
         {
             // add parent type label
-            addLabel(container, parentType).horizontalSpan = 5;
+            addLabel(container, parentType).horizontalSpan = 7;
 
             for (StateFieldDTO field : primitiveFields.get(parentType))
             {
@@ -57,9 +59,13 @@ public class DefineNativeFieldRangesPage extends WizardPage
                 {
                     createBooleanControls(container, field);
                 }
+                else if ("int[]".equals(field.getType()))
+                {
+                    createArrayControls(container, field);
+                }
                 else
                 {
-	                createWholeNumberControls(container, field);
+                    createWholeNumberControls(container, field);
                 }
             }
         }
@@ -82,15 +88,57 @@ public class DefineNativeFieldRangesPage extends WizardPage
         addLabel(container, "min:").horizontalAlignment = SWT.RIGHT;
         Text text = new Text(container, SWT.BORDER | SWT.SINGLE);
         text.setText("0");
-        addInputField(container, text, true);
+        GridData gd = addInputField(container, text, true);
+        gd.horizontalAlignment = SWT.LEFT;
+        gd.widthHint = 30;
         this.fieldRangeMinMap.put(getFieldKey(field), text);
 
         // add max
         addLabel(container, "max:").horizontalAlignment = SWT.RIGHT;
         text = new Text(container, SWT.BORDER | SWT.SINGLE);
         text.setText("3");
-        addInputField(container, text, true);
+        gd = addInputField(container, text, true);
+        gd.horizontalAlignment = SWT.LEFT;
+        gd.horizontalSpan = 3;
+        gd.widthHint = 30;
         this.fieldRangeMaxMap.put(getFieldKey(field), text);
+    }
+
+    /**
+     * @param container
+     * @param field
+     */
+    private void createArrayControls(Composite container, StateFieldDTO field)
+    {
+        // add field name/type label
+        addLabel(container, field.getName() + "  (" + field.getType() + ")");
+
+        // add min
+        addLabel(container, "min:").horizontalAlignment = SWT.RIGHT;
+        Text text = new Text(container, SWT.BORDER | SWT.SINGLE);
+        text.setText("0");
+        GridData gd = addInputField(container, text, true);
+        gd.horizontalAlignment = SWT.LEFT;
+        gd.widthHint = 30;
+        this.fieldRangeMinMap.put(getFieldKey(field), text);
+
+        // add max
+        addLabel(container, "max:").horizontalAlignment = SWT.RIGHT;
+        text = new Text(container, SWT.BORDER | SWT.SINGLE);
+        text.setText("2");
+        gd = addInputField(container, text, true);
+        gd.horizontalAlignment = SWT.LEFT;
+        gd.widthHint = 30;
+        this.fieldRangeMaxMap.put(getFieldKey(field), text);
+
+        // add arraySize
+        addLabel(container, "size:").horizontalAlignment = SWT.RIGHT;
+        text = new Text(container, SWT.BORDER | SWT.SINGLE);
+        text.setText("2");
+        gd = addInputField(container, text, true);
+        gd.horizontalAlignment = SWT.LEFT;
+        gd.widthHint = 30;
+        this.fieldArrayMap.put(getFieldKey(field), text);
     }
 
     /**
@@ -109,13 +157,15 @@ public class DefineNativeFieldRangesPage extends WizardPage
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         isFalseEnabled.setLayoutData(gd);
-        
         this.fieldRangeMinMap.put(getFieldKey(field), isFalseEnabled);
 
         // add true
         Button isTrueEnabled = new Button(container, SWT.CHECK);
         isTrueEnabled.setText("true");
         isTrueEnabled.setSelection(true);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        isTrueEnabled.setLayoutData(gd);
         this.fieldRangeMaxMap.put(getFieldKey(field), isTrueEnabled);
     }
 
@@ -123,9 +173,9 @@ public class DefineNativeFieldRangesPage extends WizardPage
     {
         Control control = this.fieldRangeMinMap.get(getFieldKey(field));
         // numeric
-        if(control instanceof Text)
+        if (control instanceof Text)
         {
-	        return Integer.parseInt(((Text)control).getText());
+            return Integer.parseInt(((Text) control).getText());
         }
         // boolean
         return ((Button) control).getSelection() ? 0 : 1;
@@ -135,12 +185,34 @@ public class DefineNativeFieldRangesPage extends WizardPage
     {
         Control control = this.fieldRangeMaxMap.get(getFieldKey(field));
         // numeric
-        if(control instanceof Text)
+        if (control instanceof Text)
         {
-	        return Integer.parseInt(((Text)control).getText());
+            return Integer.parseInt(((Text) control).getText());
         }
         // boolean
         return ((Button) control).getSelection() ? 1 : 0;
+    }
+
+    public int getFieldSize(StateFieldDTO field)
+    {
+        Control control = this.fieldArrayMap.get(getFieldKey(field));
+        // null
+        if (control == null)
+        {
+            return 0;
+        }
+        // numeric
+        else if (control instanceof Text)
+        {
+            return Integer.parseInt(((Text) control).getText());
+        }
+        // boolean
+        else if (control instanceof Button)
+        {
+            return ((Button) control).getSelection() ? 1 : 0;
+        }
+        
+        return 0;
     }
 
     private String getFieldKey(StateFieldDTO field)

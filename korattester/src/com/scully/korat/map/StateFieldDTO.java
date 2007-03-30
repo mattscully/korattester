@@ -14,6 +14,8 @@ public class StateFieldDTO
     int min;
 
     int max;
+    
+    int arraySize;
 
     public boolean equals(Object obj)
     {
@@ -121,5 +123,21 @@ public class StateFieldDTO
     public void setType(Class type)
     {
         this.type = type.getName();
+    }
+
+    /**
+     * @return the arraySize
+     */
+    public int getArraySize()
+    {
+        return arraySize;
+    }
+
+    /**
+     * @param arraySize the arraySize to set
+     */
+    public void setArraySize(int arraySize)
+    {
+        this.arraySize = arraySize;
     }
 }

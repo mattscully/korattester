@@ -68,6 +68,7 @@ public class CandidateFieldDTO
     /**
      * @return the fieldType
      */
+    // TODO: Is getFieldType() never used???
     public String getFieldType()
     {
         return fieldType;

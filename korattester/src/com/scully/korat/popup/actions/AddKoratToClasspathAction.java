@@ -56,11 +56,11 @@ public class AddKoratToClasspathAction implements IObjectActionDelegate
                 {
                     String jar = requiredJars[i];
                     URL jarUrl = bundle.getEntry(jar);
-                    System.out.println("URL Path: " + jarUrl.getPath());
+//                    System.out.println("URL Path: " + jarUrl.getPath());
                     IPath path = new Path(jarUrl.getPath());
-                    System.out.println("Path: " + path);
-                    System.out.println("Path OS: " + path.toOSString());
-                    System.out.println("Path Portable: " + path.toPortableString());
+//                    System.out.println("Path: " + path);
+//                    System.out.println("Path OS: " + path.toOSString());
+//                    System.out.println("Path Portable: " + path.toPortableString());
                     IClasspathEntry entry = JavaCore.newLibraryEntry(path, null, null);
                     if (!ArrayUtils.contains(rawClasspath, entry))
                     {
@@ -85,14 +85,14 @@ public class AddKoratToClasspathAction implements IObjectActionDelegate
     public void selectionChanged(IAction action, ISelection selection)
     {
         this.lastSelection = null;
-        System.out.println("New Selection: " + selection);
+//        System.out.println("New Selection: " + selection);
         if (selection instanceof IStructuredSelection)
         {
             IStructuredSelection ss = (IStructuredSelection) selection;
             if (!ss.isEmpty())
             {
                 Object firstObj = ss.getFirstElement();
-		        System.out.println("isJavaElement: " + (firstObj instanceof IJavaElement));
+//		        System.out.println("isJavaElement: " + (firstObj instanceof IJavaElement));
                 if (firstObj instanceof IJavaElement)
                 {
                     this.lastSelection = (IJavaElement) firstObj;

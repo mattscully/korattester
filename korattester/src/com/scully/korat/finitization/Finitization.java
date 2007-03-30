@@ -149,6 +149,10 @@ public class Finitization
                 {
                     this.set(field, new IntSet(stateField.getMin(), stateField.getMax()));
                 }
+                else if(type.equals(int[].class))
+                {
+                    this.set(field, new IntArraySet(stateField.getMin(), stateField.getMax(), stateField.getArraySize()));
+                }
                 else if (objSets.containsKey(type.getName()))
                 {
                     this.set(field, objSets.get(type.getName()));
