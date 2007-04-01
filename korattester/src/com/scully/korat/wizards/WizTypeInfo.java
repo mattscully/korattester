@@ -9,12 +9,14 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
 
+import com.scully.korat.Util;
 import com.scully.korat.map.StateFieldDTO;
 
 public class WizTypeInfo
@@ -86,9 +88,15 @@ public class WizTypeInfo
         {
             for (IField field : fields)
             {
+                // Skip fields we don't care about
+                if(Util.isSkippableField(field))
+                {
+                    continue;
+                }
+                
                 IType fieldType = findType(field);
                 // type of Object
-                if (fieldType != null)
+                if (fieldType != null && !Util.isSupportedNonConcreteClass(fieldType.getFullyQualifiedName()))
                 {
                     putObjectField(field);
                     String qualifiedName = fieldType.getFullyQualifiedName();

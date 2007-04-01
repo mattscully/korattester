@@ -7,12 +7,15 @@ package com.scully.korat;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+
+import org.eclipse.jdt.core.Flags;
 
 import com.scully.korat.finitization.Finitization;
 import com.scully.korat.finitization.ObjField;
@@ -270,7 +273,7 @@ public class KoratEngine
         for (Field field : fields)
         {
             // ignore JML and Korat instrumented fields
-            if (field.getName().startsWith("rac$") || field.getName().startsWith("$kor_"))
+            if (Util.isSkippableField(field))
             {
                 continue;
             }

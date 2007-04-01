@@ -5,6 +5,7 @@
 package com.scully.korat.finitization;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,7 @@ import javassist.NotFoundException;
 
 import com.scully.korat.IKoratObservable;
 import com.scully.korat.KoratObserver;
+import com.scully.korat.Util;
 import com.scully.korat.instrument.Instrumenter;
 import com.scully.korat.map.StateFieldDTO;
 import com.scully.korat.map.StateObjectDTO;
@@ -131,7 +133,7 @@ public class Finitization
             for (StateObjectDTO stateObjectDTO : stateObjects)
             {
                 ObjSet objSet = this.createObjects(stateObjectDTO.getType(), stateObjectDTO.getQuantity());
-                if (stateObjectDTO.isIncludeNullFlag())
+                if (stateObjectDTO.isNullable())
                 {
                     objSet.add(null);
                 }
@@ -145,7 +147,16 @@ public class Finitization
                 Class parent = Class.forName(stateField.getParentClass());
                 Field field = parent.getDeclaredField(stateField.getName());
                 Class type = field.getType();
-                if (type.equals(int.class))
+                if (Util.isSupportedNonConcreteClass(type))
+                {
+                    IntSet intSet = new IntSet(stateField.getMin(), stateField.getMax());
+                    if(stateField.isNullable())
+                    {
+	                    intSet.add(null);
+                    }
+                    this.set(field, intSet);
+                }
+                else if (type.equals(int.class))
                 {
                     this.set(field, new IntSet(stateField.getMin(), stateField.getMax()));
                 }
@@ -228,7 +239,7 @@ public class Finitization
 
     /**
      * <p>
-     * Create a mapping of field names as Strings to a list of ObjFields
+     * Create a mapping of fields to a list of ObjFields
      * as objects are created.
      * </p>
      * <p>
@@ -252,8 +263,8 @@ public class Finitization
         //        }
         for (Field field : c.getDeclaredFields())
         {
-            // ignore JML & Korat instrumented fields
-            if (field.getName().startsWith("rac$") || field.getName().startsWith("$kor_"))
+            // ignore static, transient, JML, & Korat instrumented fields
+            if (Util.isSkippableField(field))
             {
                 continue;
             }

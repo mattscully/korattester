@@ -6,7 +6,7 @@ public class StateObjectDTO
 {
     String type;
 
-    boolean includeNullFlag;
+    boolean isNullable;
 
     int quantity;
     
@@ -16,20 +16,20 @@ public class StateObjectDTO
     }
 
     /**
-     * @return the includeNullFlag
+     * @return the isNullable
      */
-    public boolean isIncludeNullFlag()
+    public boolean isNullable()
     {
-        return includeNullFlag;
+        return isNullable;
     }
 
     /**
-     * @param includeNullFlag
-     *            the includeNullFlag to set
+     * @param isNullable
+     *            the isNullable to set
      */
-    public void setIncludeNullFlag(boolean includeNullFlag)
+    public void setNullable(boolean isNullable)
     {
-        this.includeNullFlag = includeNullFlag;
+        this.isNullable = isNullable;
     }
 
     /**

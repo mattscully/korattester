@@ -118,6 +118,11 @@ public abstract class Predicate<T>
         return this.parameters[index];
     }
     
+    public Comparable getComparableParam(int index)
+    {
+        return (Comparable) this.parameters[index];
+    }
+    
     public byte getByteParam(int index)
     {
         return ((Byte) this.parameters[index]).byteValue();

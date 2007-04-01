@@ -26,7 +26,7 @@ public class StateSpaceBeanTest extends TestCase
     public void testAddStateObject()
     {
         StateObjectDTO stateObjectDTO = new StateObjectDTO();
-        stateObjectDTO.setIncludeNullFlag(true);
+        stateObjectDTO.setNullable(true);
         stateObjectDTO.setQuantity(3);
         stateObjectDTO.setType("com.scully.korat.test.SearchTree$Node");
         this.testStateSpaceDTO.addStateObject(stateObjectDTO);

@@ -33,6 +33,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ListDialog;
 import org.eclipse.ui.dialogs.SelectionDialog;
 
+import com.scully.korat.Util;
+
 /**
  * The "New" wizard page allows setting the container for the new file as well
  * as the file name. The page will only accept file name without the extension
@@ -180,7 +182,11 @@ public class NewStateSpacePage extends WizardPage
         //        }
         this.baseClassText.setText(this.wizTypeInfo.getType().getFullyQualifiedName());
         this.fileText.setText(this.wizTypeInfo.getType().getElementName() + ".xml");
-        this.repOkMethodText.setText("repOk");
+        IMethod repOk = this.wizTypeInfo.getType().getMethod(Util.REP_OK, null);
+        if(repOk.exists())
+        {
+	        this.repOkMethodText.setText(Util.REP_OK);
+        }
         this.targetSourceFolderText.setText("/TestKoratPlugin/src");
         if(this.wizTypeInfo.getType().getPackageFragment() != null)
         {

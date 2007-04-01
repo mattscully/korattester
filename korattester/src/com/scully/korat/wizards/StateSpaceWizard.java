@@ -231,6 +231,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
                 field.setMin(this.defineNativeFieldRangesPage.getFieldMin(field));
                 field.setMax(this.defineNativeFieldRangesPage.getFieldMax(field));
                 field.setArraySize(this.defineNativeFieldRangesPage.getFieldSize(field));
+                field.setNullable(this.defineNativeFieldRangesPage.isFieldNullable(field));
                 this.stateSpaceBuilder.addStateField(field);
             }
         }

@@ -32,7 +32,7 @@ public class StateSpaceBuilder
         StateObjectDTO stateObject = new StateObjectDTO();
         stateObject.setType(type);
         stateObject.setQuantity(quantity);
-        stateObject.setIncludeNullFlag(includeNullFlag);
+        stateObject.setNullable(includeNullFlag);
         this.stateSpace.addStateObject(stateObject);
     }
 

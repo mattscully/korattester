@@ -57,7 +57,7 @@ public class KoratBaseTest extends TestCase
         StateObjectDTO stateObject = new StateObjectDTO();
         stateObject.setType("com.scully.korat.test.SearchTree$Node");
         stateObject.setQuantity(NUM_Node);
-        stateObject.setIncludeNullFlag(true);
+        stateObject.setNullable(true);
         testStateSpace.addStateObject(stateObject);
 
         // ==> create StateFields

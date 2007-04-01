@@ -7,8 +7,9 @@ package com.scully.korat.finitization;
 /**
  * @author mscully
  *
+ * Extends ObjSet to support adding null for Comparables and Objects
  */
-public class IntSet extends FinSet
+public class IntSet extends ObjSet
 {
     
     /**

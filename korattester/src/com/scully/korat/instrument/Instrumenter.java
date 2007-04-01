@@ -9,24 +9,27 @@ import javassist.CannotCompileException;
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.CtMethod;
+import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
+import javassist.Modifier;
 import javassist.NotFoundException;
+import javassist.bytecode.Descriptor;
 import javassist.expr.ExprEditor;
 import javassist.expr.FieldAccess;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.scully.korat.KoratMain;
+import com.scully.korat.Util;
 import com.scully.korat.map.StateFieldDTO;
 import com.scully.korat.map.StateObjectDTO;
 import com.scully.korat.map.TestStateSpaceDTO;
 
 public class Instrumenter
 {
-    private static final String KORAT_PREFIX = "$kor_";
-
     TestStateSpaceDTO stateSpace;
 
     ClassPool classPool;
@@ -44,9 +47,9 @@ public class Instrumenter
         this.classPool = new ClassPool(true);
         ClassClassPath classpath = new ClassClassPath(KoratMain.class);
         this.classPool.appendClassPath(classpath);
-        
+
         this.classPool.childFirstLookup = true;
-        
+
         // append extra classpath
         if (extraClasspath != null)
         {
@@ -86,9 +89,19 @@ public class Instrumenter
         for (String className : workList)
         {
             CtClass cc = this.classPool.get(className);
+            cc.setModifiers(Modifier.PUBLIC);
             insertShadowFields(cc);
             insertObserver(cc);
             insertGettersSetters(cc);
+            try
+            {
+	            CtConstructor constructor = cc.getConstructor(Descriptor.ofConstructor(null));
+                constructor.setModifiers(Modifier.PUBLIC);
+            }
+            catch (NotFoundException e) {
+                // add a default public constructor
+                insertDefaultConstructor(cc);
+            }
         }
         for (String className : workList)
         {
@@ -106,7 +119,7 @@ public class Instrumenter
         for (StateFieldDTO fieldDTO : fields)
         {
             String fieldName = fieldDTO.getName();
-            CtField field = CtField.make("int " + KORAT_PREFIX + fieldName + " = 0;", cc);
+            CtField field = CtField.make("int " + Util.KORAT_PREFIX + fieldName + " = 0;", cc);
             cc.addField(field);
         }
     }
@@ -118,7 +131,7 @@ public class Instrumenter
         // create $kor_observer field
         // com.scully.korat.IKoratObserver $kor_observer;
         CtClass iKoratObserver = this.classPool.get("com.scully.korat.IKoratObserver");
-        CtField field = CtField.make(iKoratObserver.getName() + " " + KORAT_PREFIX + "observer = null;", cc);
+        CtField field = CtField.make(iKoratObserver.getName() + " " + Util.KORAT_PREFIX + "observer = null;", cc);
         cc.addField(field);
 
         // create setObserver method
@@ -126,8 +139,8 @@ public class Instrumenter
         // {
         //     this.$kor_observer = observer;
         // }
-        CtMethod method = CtNewMethod.make("public void " + KORAT_PREFIX + "setObserver(" + iKoratObserver.getName()
-                + " observer) {$0." + KORAT_PREFIX + "observer = observer; }", cc);
+        CtMethod method = CtNewMethod.make("public void " + Util.KORAT_PREFIX + "setObserver(" + iKoratObserver.getName()
+                + " observer) {$0." + Util.KORAT_PREFIX + "observer = observer; }", cc);
         cc.addMethod(method);
     }
 
@@ -144,10 +157,10 @@ public class Instrumenter
             //                return this.value;
             //            }
             String fieldName = field.getName();
-            String shadowFieldName = KORAT_PREFIX + fieldName;
+            String shadowFieldName = Util.KORAT_PREFIX + fieldName;
             String fieldType = field.getType();
-            String getterName = KORAT_PREFIX + "get" + StringUtils.capitalize(fieldName);
-            String observerName = KORAT_PREFIX + "observer";
+            String getterName = Util.KORAT_PREFIX + "get" + StringUtils.capitalize(fieldName);
+            String observerName = Util.KORAT_PREFIX + "observer";
             StringBuffer body = new StringBuffer(256);
             // public int $kor_getValue()
             body.append("public " + fieldType + " " + getterName + "(){");
@@ -157,7 +170,7 @@ public class Instrumenter
             body.append("$proceed($0." + shadowFieldName + "); }");
             // return this.value;
             body.append("return $0." + fieldName + "; }");
-            CtMethod method = CtNewMethod.make(body.toString(), cc, "this." + KORAT_PREFIX + "observer", "notify");
+            CtMethod method = CtNewMethod.make(body.toString(), cc, "this." + Util.KORAT_PREFIX + "observer", "notify");
             cc.addMethod(method);
 
             // setter
@@ -167,7 +180,7 @@ public class Instrumenter
             //                    this.$kor_observer.notify(this.$kor_value);
             //                this.value = value;
             //            }
-            String setterName = KORAT_PREFIX + "set" + StringUtils.capitalize(fieldName);
+            String setterName = Util.KORAT_PREFIX + "set" + StringUtils.capitalize(fieldName);
             // clear the buffer
             body.setLength(0);
             // public void $kor_setValue(int value)
@@ -178,9 +191,14 @@ public class Instrumenter
             body.append("$proceed($0." + shadowFieldName + "); }");
             // this.value = value;
             body.append("$0." + fieldName + " = value; }");
-            method = CtNewMethod.make(body.toString(), cc, "this." + KORAT_PREFIX + "observer", "notify");
+            method = CtNewMethod.make(body.toString(), cc, "this." + Util.KORAT_PREFIX + "observer", "notify");
             cc.addMethod(method);
         }
+    }
+    
+    public void insertDefaultConstructor(CtClass cc) throws CannotCompileException, NotFoundException
+    {
+        CtNewConstructor.make(null, null, cc);
     }
 
     public void instrumentFieldAccesses(CtClass cc) throws CannotCompileException
@@ -189,7 +207,7 @@ public class Instrumenter
             public void edit(FieldAccess fieldAccess) throws CannotCompileException
             {
                 // ignore instrumented fields
-                if (fieldAccess.getFieldName().startsWith(KORAT_PREFIX))
+                if (Util.isSkippableFieldAccess(fieldAccess))
                 {
                     return;
                 }
@@ -197,16 +215,16 @@ public class Instrumenter
                 {
                     try
                     {
-                        if (isStateSpaceField(fieldAccess) && !isInstrumentedMethod(fieldAccess))
+                        if (isStateSpaceField(fieldAccess))
                         {
-                            //                            System.out.println("accessing field: " + fieldAccess.getFieldName() + " in \t"
-                            //                                    + fieldAccess.where().getMethodInfo().getName() + "():"
-                            //                                    + fieldAccess.getLineNumber());
+//                            System.out.println("accessing field: " + fieldAccess.getFieldName() + " in \t"
+//                                    + fieldAccess.where().getMethodInfo().getName() + "():"
+//                                    + fieldAccess.getLineNumber());
 
                             // replace with getter
                             if (fieldAccess.isReader())
                             {
-                                String getterName = KORAT_PREFIX + "get"
+                                String getterName = Util.KORAT_PREFIX + "get"
                                         + StringUtils.capitalize(fieldAccess.getFieldName());
                                 if (fieldAccess.isStatic())
                                 {
@@ -220,7 +238,7 @@ public class Instrumenter
                             // replace with setter
                             else if (fieldAccess.isWriter())
                             {
-                                String setterName = KORAT_PREFIX + "set"
+                                String setterName = Util.KORAT_PREFIX + "set"
                                         + StringUtils.capitalize(fieldAccess.getFieldName());
                                 if (fieldAccess.isStatic())
                                 {
@@ -243,12 +261,6 @@ public class Instrumenter
                     }
                 }
             }
-
-            protected boolean isInstrumentedMethod(FieldAccess fieldAccess)
-            {
-                return fieldAccess.where().getMethodInfo().getName().startsWith(KORAT_PREFIX);
-            }
-
         });
     }
 

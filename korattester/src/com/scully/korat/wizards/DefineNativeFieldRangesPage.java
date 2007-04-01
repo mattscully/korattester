@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import com.scully.korat.Util;
 import com.scully.korat.map.StateFieldDTO;
 
 public class DefineNativeFieldRangesPage extends WizardPage
@@ -24,6 +25,8 @@ public class DefineNativeFieldRangesPage extends WizardPage
     private Map<String, Control> fieldRangeMinMap = new HashMap<String, Control>();
 
     private Map<String, Control> fieldRangeMaxMap = new HashMap<String, Control>();
+    
+    private Map<String, Button> fieldNullableCheckboxMap = new HashMap<String, Button>();
 
     private Map<String, Control> fieldArrayMap = new HashMap<String, Control>();
 
@@ -62,6 +65,10 @@ public class DefineNativeFieldRangesPage extends WizardPage
                 else if ("int[]".equals(field.getType()))
                 {
                     createArrayControls(container, field);
+                }
+                else if (Util.isSupportedNonConcreteClass(field.getType()))
+                {
+                    createObjectControls(container, field);
                 }
                 else
                 {
@@ -102,6 +109,44 @@ public class DefineNativeFieldRangesPage extends WizardPage
         gd.horizontalSpan = 3;
         gd.widthHint = 30;
         this.fieldRangeMaxMap.put(getFieldKey(field), text);
+    }
+    
+    /**
+     * @param container
+     * @param field
+     */
+    private void createObjectControls(Composite container, StateFieldDTO field)
+    {
+        // add field name/type label
+        addLabel(container, field.getName() + "  (" + field.getType() + ")");
+
+        // add min
+        addLabel(container, "min:").horizontalAlignment = SWT.RIGHT;
+        Text text = new Text(container, SWT.BORDER | SWT.SINGLE);
+        text.setText("0");
+        GridData gd = addInputField(container, text, true);
+        gd.horizontalAlignment = SWT.LEFT;
+        gd.widthHint = 30;
+        this.fieldRangeMinMap.put(getFieldKey(field), text);
+
+        // add max
+        addLabel(container, "max:").horizontalAlignment = SWT.RIGHT;
+        text = new Text(container, SWT.BORDER | SWT.SINGLE);
+        text.setText("3");
+        gd = addInputField(container, text, true);
+        gd.horizontalAlignment = SWT.LEFT;
+        gd.widthHint = 30;
+        this.fieldRangeMaxMap.put(getFieldKey(field), text);
+        
+        // add nullable checkbox
+        Button isNullable = new Button(container, SWT.CHECK);
+        isNullable.setText("Nullable");
+        isNullable.setSelection(true);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        gd.horizontalAlignment = SWT.CENTER;
+        isNullable.setLayoutData(gd);
+        this.fieldNullableCheckboxMap.put(getFieldKey(field), isNullable);
     }
 
     /**
@@ -213,6 +258,17 @@ public class DefineNativeFieldRangesPage extends WizardPage
         }
         
         return 0;
+    }
+    
+    public boolean isFieldNullable(StateFieldDTO field)
+    {
+        Control control = this.fieldNullableCheckboxMap.get(getFieldKey(field));
+        if (control == null)
+        {
+            return false;
+        }
+        
+        return ((Button) control).getSelection();
     }
 
     private String getFieldKey(StateFieldDTO field)

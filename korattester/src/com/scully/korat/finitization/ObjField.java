@@ -6,6 +6,8 @@ package com.scully.korat.finitization;
 
 import java.lang.reflect.Field;
 
+import com.scully.korat.Util;
+
 /**
  * @author mscully
  *
@@ -57,7 +59,7 @@ public class ObjField
         {
             if (this.observableIndexField == null)
             {
-                this.observableIndexField = this.object.getClass().getDeclaredField("$kor_" + this.field.getName());
+                this.observableIndexField = this.object.getClass().getDeclaredField(Util.KORAT_PREFIX + this.field.getName());
                 this.observableIndexField.setAccessible(true);
             }
             this.observableIndexField.setInt(this.object, idx);

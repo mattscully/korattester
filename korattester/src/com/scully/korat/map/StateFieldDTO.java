@@ -16,6 +16,9 @@ public class StateFieldDTO
     int max;
     
     int arraySize;
+    
+    // for Comparables and Objects
+    boolean isNullable;
 
     public boolean equals(Object obj)
     {
@@ -139,5 +142,21 @@ public class StateFieldDTO
     public void setArraySize(int arraySize)
     {
         this.arraySize = arraySize;
+    }
+
+    /**
+     * @return the isNullable
+     */
+    public boolean isNullable()
+    {
+        return isNullable;
+    }
+
+    /**
+     * @param isNullable the isNullable to set
+     */
+    public void setNullable(boolean isNullable)
+    {
+        this.isNullable = isNullable;
     }
 }

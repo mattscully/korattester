@@ -45,7 +45,7 @@ public class BeanXmlMapperTest extends TestCase
         StateObjectDTO stateObjectDTO = new StateObjectDTO();
         stateObjectDTO.setType(SearchTree.Node.class);
         stateObjectDTO.setQuantity(3);
-        stateObjectDTO.setIncludeNullFlag(true);
+        stateObjectDTO.setNullable(true);
         this.testStateSpaceDTO.addStateObject(stateObjectDTO);
 
         // ==> create StateFields
