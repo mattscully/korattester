@@ -13,17 +13,26 @@ import java.util.Stack;
  * @author mscully
  *
  */
-public class IntArraySet extends FinSet
+public class IntObjArraySet extends FinSet
 {
 
-    public IntArraySet(int min, int max, int size)
+    /**
+     * @param isNullable handles non primitive types
+     */
+    public IntObjArraySet(int min, int max, int size, boolean isNullable)
     {
         // try to create every possible array given
         // value bounds and array size.
         Integer ZERO = new Integer(0);
         int inclusiveRange = max - min + 1;
-        Integer[] valueDomain = new Integer[inclusiveRange];
-        for (int i = 0, value = min; i < inclusiveRange; i++, value++)
+        Integer[] valueDomain = new Integer[inclusiveRange + (isNullable ? 1 : 0)];
+        int i = 0;
+        if(isNullable)
+        {
+            valueDomain[0] = null;
+            i++;
+        }
+        for (int value = min; i < inclusiveRange; i++, value++)
         {
             valueDomain[i] = value;
         }
@@ -42,9 +51,9 @@ public class IntArraySet extends FinSet
         {
             // track actual values for states
             possibleStates.add(valueOf(state, valueDomain));
-            for (int i = 0; i < size; i++)
+            for (int j = 0; j < size; j++)
             {
-                Integer arrayIndex = new Integer(i);
+                Integer arrayIndex = new Integer(j);
                 if (!arrayIndexesStack.contains(arrayIndex))
                 {
                     arrayIndexesStack.push(arrayIndex);
@@ -72,7 +81,7 @@ public class IntArraySet extends FinSet
         {
             // create a class domain for each array
             ClassDomain classDomain = new ClassDomain();
-            Object[] objects = new Object[] { intArrayOf(array) };
+            Object[] objects = new Object[] { array };
             classDomain.set(objects);
             ClassDomainIndex classDomainIndex = new ClassDomainIndex(classDomain);
             this.classDomainIndices.add(classDomainIndex);
@@ -89,20 +98,6 @@ public class IntArraySet extends FinSet
         for (int i = 0; i < array.length; i++)
         {
             newArray[i] = valueDomain[array[i]];
-        }
-        return newArray;
-    }
-
-    private static int[] intArrayOf(Integer[] array)
-    {
-        if (array == null || array.length == 0)
-        {
-            return new int[] {};
-        }
-        int[] newArray = new int[array.length];
-        for (int i = 0; i < array.length; i++)
-        {
-            newArray[i] = array[i];
         }
         return newArray;
     }

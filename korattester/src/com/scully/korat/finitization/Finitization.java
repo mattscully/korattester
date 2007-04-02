@@ -5,7 +5,6 @@
 package com.scully.korat.finitization;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -147,7 +146,7 @@ public class Finitization
                 Class parent = Class.forName(stateField.getParentClass());
                 Field field = parent.getDeclaredField(stateField.getName());
                 Class type = field.getType();
-                if (Util.isSupportedNonConcreteClass(type))
+                if (type.equals(int.class) || Util.isTypeSupportedByInteger(type))
                 {
                     IntSet intSet = new IntSet(stateField.getMin(), stateField.getMax());
                     if(stateField.isNullable())
@@ -156,13 +155,13 @@ public class Finitization
                     }
                     this.set(field, intSet);
                 }
-                else if (type.equals(int.class))
-                {
-                    this.set(field, new IntSet(stateField.getMin(), stateField.getMax()));
-                }
                 else if(type.equals(int[].class))
                 {
                     this.set(field, new IntArraySet(stateField.getMin(), stateField.getMax(), stateField.getArraySize()));
+                }
+                else if(Util.isTypeSupportedByIntegerArray(type))
+                {
+                    this.set(field, new IntObjArraySet(stateField.getMin(), stateField.getMax(), stateField.getArraySize(), stateField.isNullable()));
                 }
                 else if (objSets.containsKey(type.getName()))
                 {

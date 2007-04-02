@@ -64,7 +64,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
 
     private DefineObjPoolsPage defineObjPoolsPage;
 
-    private DefineNativeFieldRangesPage defineNativeFieldRangesPage;
+    private DefineDataFieldRangesPage defineDataFieldRangesPage;
 
     private StateSpaceBuilder stateSpaceBuilder;
 
@@ -91,10 +91,10 @@ public class StateSpaceWizard extends Wizard implements INewWizard
         this.wizTypeInfo = new WizTypeInfo(this.selection);
         this.newStateSpacePage = new NewStateSpacePage("stateSpacePage", this.wizTypeInfo);
         this.defineObjPoolsPage = new DefineObjPoolsPage("objectPoolPage", this.wizTypeInfo);
-        this.defineNativeFieldRangesPage = new DefineNativeFieldRangesPage("primitiveFieldRangesPage", this.wizTypeInfo);
+        this.defineDataFieldRangesPage = new DefineDataFieldRangesPage("dataFieldRangesPage", this.wizTypeInfo);
         addPage(this.newStateSpacePage);
         addPage(this.defineObjPoolsPage);
-        addPage(this.defineNativeFieldRangesPage);
+        addPage(this.defineDataFieldRangesPage);
     }
     
     public void updateState(IType baseType)
@@ -224,14 +224,14 @@ public class StateSpaceWizard extends Wizard implements INewWizard
 
         // ==> create StateFields
         // add primitive fields
-        for (List<StateFieldDTO> fields : this.wizTypeInfo.getPrimitiveFields().values())
+        for (List<StateFieldDTO> fields : this.wizTypeInfo.getDataFields().values())
         {
             for (StateFieldDTO field : fields)
             {
-                field.setMin(this.defineNativeFieldRangesPage.getFieldMin(field));
-                field.setMax(this.defineNativeFieldRangesPage.getFieldMax(field));
-                field.setArraySize(this.defineNativeFieldRangesPage.getFieldSize(field));
-                field.setNullable(this.defineNativeFieldRangesPage.isFieldNullable(field));
+                field.setMin(this.defineDataFieldRangesPage.getFieldMin(field));
+                field.setMax(this.defineDataFieldRangesPage.getFieldMax(field));
+                field.setArraySize(this.defineDataFieldRangesPage.getFieldSize(field));
+                field.setNullable(this.defineDataFieldRangesPage.isFieldNullable(field));
                 this.stateSpaceBuilder.addStateField(field);
             }
         }

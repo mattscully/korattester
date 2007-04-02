@@ -20,17 +20,27 @@ public class Util
     
     public static final String REP_OK = "repOk";
     
-    private static List<Object> supportedNonConcreteTypes;
+    private static List<Object> typesSupportedByInteger;
+    
+    private static List<Object> typesSupportedByIntegerArray;
     
     static
     {
-        supportedNonConcreteTypes = new ArrayList<Object>();
-        supportedNonConcreteTypes.add("Comparable");
-        supportedNonConcreteTypes.add("java.lang.Comparable");
-        supportedNonConcreteTypes.add("Object");
-        supportedNonConcreteTypes.add("java.lang.Object");
-        supportedNonConcreteTypes.add(Comparable.class);
-        supportedNonConcreteTypes.add(Object.class);
+        typesSupportedByInteger = new ArrayList<Object>();
+        typesSupportedByInteger.add("Comparable");
+        typesSupportedByInteger.add("java.lang.Comparable");
+        typesSupportedByInteger.add("Object");
+        typesSupportedByInteger.add("java.lang.Object");
+        typesSupportedByInteger.add(Comparable.class);
+        typesSupportedByInteger.add(Object.class);
+        
+        typesSupportedByIntegerArray = new ArrayList<Object>();
+        typesSupportedByIntegerArray.add("Comparable[]");
+        typesSupportedByIntegerArray.add("java.lang.Comparable[]");
+        typesSupportedByIntegerArray.add("Object[]");
+        typesSupportedByIntegerArray.add("java.lang.Object[]");
+        typesSupportedByIntegerArray.add(Comparable[].class);
+        typesSupportedByIntegerArray.add(Object[].class);
     }
     
     public static boolean isSkippableField(Field field)
@@ -50,14 +60,24 @@ public class Util
         || fieldAccess.isStatic();
     }
     
-    public static boolean isSupportedNonConcreteClass(Class type)
+    public static boolean isTypeSupportedByInteger(Class type)
     {
-        return supportedNonConcreteTypes.contains(type);
+        return typesSupportedByInteger.contains(type);
     }
     
-    public static boolean isSupportedNonConcreteClass(String type)
+    public static boolean isTypeSupportedByInteger(String type)
     {
-        return supportedNonConcreteTypes.contains(type);
+        return typesSupportedByInteger.contains(type);
+    }
+    
+    public static boolean isTypeSupportedByIntegerArray(Class type)
+    {
+        return typesSupportedByIntegerArray.contains(type);
+    }
+    
+    public static boolean isTypeSupportedByIntegerArray(String type)
+    {
+        return typesSupportedByIntegerArray.contains(type);
     }
     
     private static boolean isInstrumentedMethod(FieldAccess fieldAccess)
