@@ -64,13 +64,6 @@
                menubarPath="com.scully.korat.popup.menu1/slot1"
                id="com.scully.korat.createStateSpace">
          </action>
-         <action
-               class="com.scully.korat.popup.actions.AddKoratToClasspathAction"
-               enablesFor="1"
-               id="com.scully.korat.addKoratToClasspath"
-               label="&amp;Add Korat to classpath"
-               menubarPath="com.scully.korat.popup.menu1/slot1"
-               style="push"/>
       </objectContribution>
    </extension>
    <extension

@@ -195,7 +195,7 @@ public class DefineDataFieldRangesPage extends WizardPage
         {
             // add nullable checkbox
             Button isNullable = new Button(container, SWT.CHECK);
-            isNullable.setText("Nullable");
+            isNullable.setText("Contains NULLs");
             isNullable.setSelection(true);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalAlignment = SWT.LEFT;
