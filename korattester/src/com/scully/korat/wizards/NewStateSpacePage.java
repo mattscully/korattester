@@ -187,7 +187,18 @@ public class NewStateSpacePage extends WizardPage
         {
 	        this.repOkMethodText.setText(Util.REP_OK);
         }
-        this.targetSourceFolderText.setText("/TestKoratPlugin/src");
+        try
+        {
+            List<String> sourceFolderNames = getSourceFolderNames();
+            if(!sourceFolderNames.isEmpty())
+            {
+		        this.targetSourceFolderText.setText(sourceFolderNames.get(0));
+            }
+        }
+        catch (JavaModelException e)
+        {
+            e.printStackTrace();
+        }
         if(this.wizTypeInfo.getType().getPackageFragment() != null)
         {
 	        this.packageName = this.wizTypeInfo.getType().getPackageFragment().getElementName();
@@ -248,17 +259,7 @@ public class NewStateSpacePage extends WizardPage
 
     public String selectTargetSource() throws JavaModelException
     {
-        IJavaProject project = this.wizTypeInfo.getType().getJavaProject();
-        List<IPackageFragmentRoot> roots = Arrays.asList(project.getPackageFragmentRoots());
-        List<String> sourceFolderNames = new ArrayList<String>();
-        for (Iterator iter = roots.iterator(); iter.hasNext();)
-        {
-            IPackageFragmentRoot root = (IPackageFragmentRoot) iter.next();
-            if(!root.isExternal() && root.getKind() == IPackageFragmentRoot.K_SOURCE)
-            {
-                sourceFolderNames.add(root.getPath().toPortableString());
-            }
-        }
+        List<String> sourceFolderNames = getSourceFolderNames();
         // Create the list dialog
         ListDialog dialog = new ListDialog(this.getShell());
         dialog.setAddCancelButton(true);
@@ -277,6 +278,26 @@ public class NewStateSpacePage extends WizardPage
             return null;
         return (String) selectedTargetSource[0];
         
+    }
+
+    /**
+     * @return
+     * @throws JavaModelException
+     */
+    private List<String> getSourceFolderNames() throws JavaModelException
+    {
+        IJavaProject project = this.wizTypeInfo.getType().getJavaProject();
+        List<IPackageFragmentRoot> roots = Arrays.asList(project.getPackageFragmentRoots());
+        List<String> sourceFolderNames = new ArrayList<String>();
+        for (Iterator iter = roots.iterator(); iter.hasNext();)
+        {
+            IPackageFragmentRoot root = (IPackageFragmentRoot) iter.next();
+            if(!root.isExternal() && root.getKind() == IPackageFragmentRoot.K_SOURCE)
+            {
+                sourceFolderNames.add(root.getPath().toPortableString());
+            }
+        }
+        return sourceFolderNames;
     }
 
     /**
