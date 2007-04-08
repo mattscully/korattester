@@ -13,7 +13,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import com.scully.korat.KoratPlugin;
 import com.scully.korat.wizards.StateSpaceWizard;
 
-public class GenerateFinitization implements IObjectActionDelegate
+public class CreateStateSpace implements IObjectActionDelegate
 {
 
 //    IType lastSelection;
@@ -22,7 +22,7 @@ public class GenerateFinitization implements IObjectActionDelegate
     /**
      * Constructor for Action1.
      */
-    public GenerateFinitization()
+    public CreateStateSpace()
     {
         super();
     }
