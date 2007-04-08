@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
@@ -137,6 +136,16 @@ public class WizTypeInfo
             // primitive type
             return null;
         }
+    }
+    
+    public boolean hasDataFields()
+    {
+        return !this.dataFields.isEmpty();
+    }
+    
+    public boolean hasObjectFields()
+    {
+        return !this.objectFields.isEmpty();
     }
 
     /**

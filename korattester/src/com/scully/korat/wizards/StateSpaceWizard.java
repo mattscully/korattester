@@ -90,11 +90,17 @@ public class StateSpaceWizard extends Wizard implements INewWizard
     {
         this.wizTypeInfo = new WizTypeInfo(this.selection);
         this.newStateSpacePage = new NewStateSpacePage("stateSpacePage", this.wizTypeInfo);
-        this.defineObjPoolsPage = new DefineObjPoolsPage("objectPoolPage", this.wizTypeInfo);
-        this.defineDataFieldRangesPage = new DefineDataFieldRangesPage("dataFieldRangesPage", this.wizTypeInfo);
         addPage(this.newStateSpacePage);
-        addPage(this.defineObjPoolsPage);
-        addPage(this.defineDataFieldRangesPage);
+        if(this.wizTypeInfo.hasObjectFields())
+        {
+	        this.defineObjPoolsPage = new DefineObjPoolsPage("objectPoolPage", this.wizTypeInfo);
+	        addPage(this.defineObjPoolsPage);
+        }
+        if(this.wizTypeInfo.hasDataFields())
+        {
+	        this.defineDataFieldRangesPage = new DefineDataFieldRangesPage("dataFieldRangesPage", this.wizTypeInfo);
+	        addPage(this.defineDataFieldRangesPage);
+        }
     }
     
     public void updateState(IType baseType)
