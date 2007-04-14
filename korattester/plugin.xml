@@ -66,20 +66,6 @@
          </action>
       </objectContribution>
    </extension>
-   <extension
-         point="org.eclipse.ui.newWizards">
-      <category
-            id="com.scully.korat"
-            name="Korat"/>
-      <wizard
-            category="com.scully.korat"
-            class="com.scully.korat.wizards.StateSpaceWizard"
-            hasPages="true"
-            icon="icons/sample.gif"
-            id="com.scully.korat.wizards.StateSpaceWizard"
-            name="New State Space Wizard"
-            project="false"/>
-   </extension>
 
 
 </plugin>
