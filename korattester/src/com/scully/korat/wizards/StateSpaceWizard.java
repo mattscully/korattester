@@ -154,9 +154,7 @@ public class StateSpaceWizard extends Wizard implements INewWizard
     }
 
     /**
-     * The worker method. It will find the container, create the
-     * file if missing or just replace its contents, and open
-     * the editor on the newly created file.
+     * The worker method. It will create the state space XML file.
      */
 
     private void doFinish(String containerName, String packageName, String fileName, IProgressMonitor monitor) throws CoreException
