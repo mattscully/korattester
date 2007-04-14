@@ -39,12 +39,21 @@ public class KoratMain
         TestStateSpaceDTO stateSpace = (TestStateSpaceDTO) BeanXmlMapper.xmlToBean(stateSpaceXml, "TestStateSpaceDTO",
                 TestStateSpaceDTO.class);
         
+        fillCandidateStates(stateSpace, classpath);
+        
+        return BeanXmlMapper.beanToXml(stateSpace);
+    }
+    
+    public static void fillCandidateStates(TestStateSpaceDTO stateSpace, String[] classpath)
+    {
+        if (stateSpace == null)
+        {
+            throw new IllegalArgumentException("Korat requires the stateSpace to be passed to KoratMain");
+        }
+        
         // Find all valid states
         KoratEngine korat = new KoratEngine(stateSpace, classpath);
         List<CandidateStateDTO> validStates = korat.findAllValidStates();
         stateSpace.setCandidateStates(validStates);
-//        System.out.println("Generated States = " + validStates.size());
-        
-        return BeanXmlMapper.beanToXml(stateSpace);
     }
 }
