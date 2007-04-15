@@ -8,6 +8,17 @@ import javassist.ClassPool;
 
 import org.apache.commons.beanutils.MethodUtils;
 
+/**
+ * This class provides two features:
+ * <ul>
+ * <li>Debug information on which classes in total were loaded, which were
+ * defined here, and which were delegated.</li>
+ * <li>Exposes the invokeExactMethod method which allows the client to load
+ * a class with this class loader and invoke a method on that class.
+ * </ul>
+ * @author mscully
+ *
+ */
 public class Loader extends javassist.Loader
 {
     private List<String> delegatedClasses = new ArrayList<String>();

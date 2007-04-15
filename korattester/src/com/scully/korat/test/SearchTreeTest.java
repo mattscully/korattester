@@ -5,7 +5,7 @@ import junit.framework.TestCase;
 
 public class SearchTreeTest extends TestCase
 {
-    KoratTester tester;
+    KoratTester<SearchTree> tester;
 
     protected void setUp() throws Exception
     {
