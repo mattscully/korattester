@@ -5,20 +5,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import com.scully.korat.Util;
 import com.scully.korat.map.StateFieldDTO;
 
-public class DefineDataFieldRangesPage extends WizardPage
+public class DefineDataFieldRangesPage extends KoratWizardPage
 {
     private WizTypeInfo wizTypeInfo;
 
@@ -54,7 +52,7 @@ public class DefineDataFieldRangesPage extends WizardPage
         for (String parentType : dataFields.keySet())
         {
             // add parent type label
-            addLabel(container, parentType).horizontalSpan = 8;
+            addLabel(container, parentType, GridData.FILL_HORIZONTAL).horizontalSpan = 8;
 
             for (StateFieldDTO field : dataFields.get(parentType))
             {
@@ -77,9 +75,58 @@ public class DefineDataFieldRangesPage extends WizardPage
             }
         }
 
-        //        initialize();
-        //        dialogChanged();
+        clearErrorsForFirstPageLoad();
         setControl(container);
+    }
+
+    @Override
+    protected boolean isValid()
+    {
+        boolean isValid = true;
+        int min = 0;
+        int max = 0;
+        int size = 0;
+        for (List<StateFieldDTO> fields : this.wizTypeInfo.getDataFields().values())
+        {
+            for (StateFieldDTO field : fields)
+            {
+                // verify numeric values
+                try
+                {
+                    min = this.getFieldMin(field);
+                    max = this.getFieldMax(field);
+                    size = this.getFieldSize(field);
+                }
+                catch (NumberFormatException e)
+                {
+                    this.addErrorMessage("- All entered values must be numeric.");
+                    // return here if not numeric, can't go further
+                    return false;
+                }
+                if("boolean".equals(field.getType()))
+                {
+                    if(min > max)
+                    {
+                        this.addErrorMessage("- At least one of True or False must be selected for boolean fields.");
+                        isValid = false;
+                    }
+                }
+                else
+                {
+                    if(min > max)
+                    {
+                        this.addErrorMessage("- Min values must be less than or equal to Max values.");
+                        isValid = false;
+                    }
+                    if(size < 0)
+                    {
+                        this.addErrorMessage("- Array sizes cannot be negative.");
+                        isValid = false;
+                    }
+                }
+            }
+        }
+        return isValid;
     }
 
     /**
@@ -92,19 +139,19 @@ public class DefineDataFieldRangesPage extends WizardPage
         addLabel(container, field.getName() + "  (" + field.getType() + ")");
 
         // add min
-        addLabel(container, "min:").horizontalAlignment = SWT.RIGHT;
+        addLabel(container, "min:", GridData.FILL_HORIZONTAL).horizontalAlignment = SWT.RIGHT;
         Text text = new Text(container, SWT.BORDER | SWT.SINGLE);
         text.setText("0");
-        GridData gd = addInputField(container, text, true);
+        GridData gd = addInputField(container, text, true, true);
         gd.horizontalAlignment = SWT.LEFT;
         gd.widthHint = 30;
         this.fieldRangeMinMap.put(getFieldKey(field), text);
 
         // add max
-        addLabel(container, "max:").horizontalAlignment = SWT.RIGHT;
+        addLabel(container, "max:", GridData.FILL_HORIZONTAL).horizontalAlignment = SWT.RIGHT;
         text = new Text(container, SWT.BORDER | SWT.SINGLE);
         text.setText("3");
-        gd = addInputField(container, text, true);
+        gd = addInputField(container, text, true, true);
         gd.horizontalAlignment = SWT.LEFT;
         gd.horizontalSpan = 4;
         gd.widthHint = 30;
@@ -121,19 +168,19 @@ public class DefineDataFieldRangesPage extends WizardPage
         addLabel(container, field.getName() + "  (" + field.getType() + ")");
 
         // add min
-        addLabel(container, "min:").horizontalAlignment = SWT.RIGHT;
+        addLabel(container, "min:", GridData.FILL_HORIZONTAL).horizontalAlignment = SWT.RIGHT;
         Text text = new Text(container, SWT.BORDER | SWT.SINGLE);
         text.setText("0");
-        GridData gd = addInputField(container, text, true);
+        GridData gd = addInputField(container, text, true, true);
         gd.horizontalAlignment = SWT.LEFT;
         gd.widthHint = 30;
         this.fieldRangeMinMap.put(getFieldKey(field), text);
 
         // add max
-        addLabel(container, "max:").horizontalAlignment = SWT.RIGHT;
+        addLabel(container, "max:", GridData.FILL_HORIZONTAL).horizontalAlignment = SWT.RIGHT;
         text = new Text(container, SWT.BORDER | SWT.SINGLE);
         text.setText("3");
-        gd = addInputField(container, text, true);
+        gd = addInputField(container, text, true, true);
         gd.horizontalAlignment = SWT.LEFT;
         gd.widthHint = 30;
         this.fieldRangeMaxMap.put(getFieldKey(field), text);
@@ -159,19 +206,19 @@ public class DefineDataFieldRangesPage extends WizardPage
         addLabel(container, field.getName() + "  (" + field.getType() + ")");
 
         // add min
-        addLabel(container, "min:").horizontalAlignment = SWT.RIGHT;
+        addLabel(container, "min:", GridData.FILL_HORIZONTAL).horizontalAlignment = SWT.RIGHT;
         Text text = new Text(container, SWT.BORDER | SWT.SINGLE);
         text.setText("0");
-        GridData gd = addInputField(container, text, true);
+        GridData gd = addInputField(container, text, true, true);
         gd.horizontalAlignment = SWT.LEFT;
         gd.widthHint = 30;
         this.fieldRangeMinMap.put(getFieldKey(field), text);
 
         // add max
-        addLabel(container, "max:").horizontalAlignment = SWT.RIGHT;
+        addLabel(container, "max:", GridData.FILL_HORIZONTAL).horizontalAlignment = SWT.RIGHT;
         text = new Text(container, SWT.BORDER | SWT.SINGLE);
         text.setText("2");
-        gd = addInputField(container, text, true);
+        gd = addInputField(container, text, true, true);
         gd.horizontalAlignment = SWT.LEFT;
         gd.widthHint = 30;
         this.fieldRangeMaxMap.put(getFieldKey(field), text);
@@ -179,10 +226,10 @@ public class DefineDataFieldRangesPage extends WizardPage
         boolean isNullableEnabled = Util.isTypeSupportedByIntegerArray(field.getType());
 
         // add arraySize
-        addLabel(container, "size:").horizontalAlignment = SWT.RIGHT;
+        addLabel(container, "size:", GridData.FILL_HORIZONTAL).horizontalAlignment = SWT.RIGHT;
         text = new Text(container, SWT.BORDER | SWT.SINGLE);
         text.setText("2");
-        gd = addInputField(container, text, true);
+        gd = addInputField(container, text, true, true);
         gd.horizontalAlignment = SWT.LEFT;
         if (!isNullableEnabled)
         {
@@ -211,7 +258,7 @@ public class DefineDataFieldRangesPage extends WizardPage
     private void createBooleanControls(Composite container, StateFieldDTO field)
     {
         // add field name/type label
-        addLabel(container, field.getName() + "  (" + field.getType() + ")").horizontalSpan = 2;
+        addLabel(container, field.getName() + "  (" + field.getType() + ")", GridData.FILL_HORIZONTAL).horizontalSpan = 2;
 
         // add false
         Button isFalseEnabled = new Button(container, SWT.CHECK);
@@ -220,6 +267,7 @@ public class DefineDataFieldRangesPage extends WizardPage
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         isFalseEnabled.setLayoutData(gd);
+        this.addValidationListener(isFalseEnabled);
         this.fieldRangeMinMap.put(getFieldKey(field), isFalseEnabled);
 
         // add true
@@ -229,6 +277,7 @@ public class DefineDataFieldRangesPage extends WizardPage
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 4;
         isTrueEnabled.setLayoutData(gd);
+        this.addValidationListener(isTrueEnabled);
         this.fieldRangeMaxMap.put(getFieldKey(field), isTrueEnabled);
     }
 
@@ -292,22 +341,5 @@ public class DefineDataFieldRangesPage extends WizardPage
     private String getFieldKey(StateFieldDTO field)
     {
         return field.getParentClass() + "." + field.getName();
-    }
-
-    private GridData addLabel(Composite container, String text)
-    {
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        Label label = new Label(container, SWT.NULL);
-        label.setText(text);
-        label.setLayoutData(gd);
-        return gd;
-    }
-
-    private GridData addInputField(Composite container, Text text, boolean enabled)
-    {
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        text.setLayoutData(gd);
-        text.setEnabled(enabled);
-        return gd;
     }
 }

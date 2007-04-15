@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -18,17 +19,12 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ListDialog;
 import org.eclipse.ui.dialogs.SelectionDialog;
@@ -41,22 +37,22 @@ import com.scully.korat.Util;
  * OR with the extension that matches the expected one (xml).
  */
 
-public class NewStateSpacePage extends WizardPage
+public class NewStateSpacePage extends KoratWizardPage
 {
     //    private Text containerText;
 
     private Text baseClassText;
 
-    private Text fileText;
+    Text fileText;
 
-    private Text repOkMethodText;
+    Text repOkMethodText;
 
-    private Text targetSourceFolderText;
+    Text targetSourceFolderText;
 
     private String packageName;
 
     private WizTypeInfo wizTypeInfo;
-
+    
     /**
      * Constructor for SampleNewWizardPage.
      * 
@@ -96,7 +92,7 @@ public class NewStateSpacePage extends WizardPage
         // add Source folder
         addLabel(container, "Target source fol&der:");
         this.targetSourceFolderText = new Text(container, SWT.BORDER | SWT.SINGLE);
-        addInputField(container, this.targetSourceFolderText, true, true);
+        addInputField(container, this.targetSourceFolderText, false, true);
         
         // add Browse button for source folder
         Button button = new Button(container, SWT.PUSH);
@@ -130,32 +126,29 @@ public class NewStateSpacePage extends WizardPage
 //        addInputField(container, this.packageNameText, true, true).horizontalSpan = 2;
 
         initialize();
-        dialogChanged();
         setControl(container);
     }
 
-    private Label addLabel(Composite container, String text)
+    @Override
+    protected boolean isValid()
     {
-        Label label = new Label(container, SWT.NULL);
-        label.setText(text);
-        return label;
-    }
-
-    private GridData addInputField(Composite container, Text text, boolean editable, boolean handleModify)
-    {
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        text.setLayoutData(gd);
-        text.setEditable(editable);
-        if (handleModify)
+        boolean isValid = true;
+        if(StringUtils.isBlank(this.fileText.getText()))
         {
-            text.addModifyListener(new ModifyListener() {
-                public void modifyText(ModifyEvent e)
-                {
-                    dialogChanged();
-                }
-            });
+            addErrorMessage("- File name cannot be blank.");
+            isValid &= false;
         }
-        return gd;
+        if(StringUtils.isBlank(this.targetSourceFolderText.getText()))
+        {
+            addErrorMessage("- A target source folder must be selected.");
+            isValid &= false;
+        }
+        if(StringUtils.isBlank(this.repOkMethodText.getText()))
+        {
+            addErrorMessage("- A repOk() method must be selected.");
+            isValid &= false;
+        }
+        return isValid;
     }
 
     /**
@@ -203,7 +196,8 @@ public class NewStateSpacePage extends WizardPage
         {
 	        this.packageName = this.wizTypeInfo.getType().getPackageFragment().getElementName();
         }
-                
+        
+        this.clearErrorsForFirstPageLoad();
     }
 
     public IType selectType() throws JavaModelException
@@ -336,59 +330,6 @@ public class NewStateSpacePage extends WizardPage
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Ensures that both text fields are set.
-     */
-
-    private void dialogChanged()
-    {
-        //        IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(getContainerName()));
-        //        String fileName = getFileName();
-        //
-        //        if (getContainerName().length() == 0)
-        //        {
-        //            updateStatus("File container must be specified");
-        //            return;
-        //        }
-        //        if (container == null || (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0)
-        //        {
-        //            updateStatus("File container must exist");
-        //            return;
-        //        }
-        //        if (!container.isAccessible())
-        //        {
-        //            updateStatus("Project must be writable");
-        //            return;
-        //        }
-        //        if (fileName.length() == 0)
-        //        {
-        //            updateStatus("File name must be specified");
-        //            return;
-        //        }
-        //        if (fileName.replace('\\', '/').indexOf('/', 1) > 0)
-        //        {
-        //            updateStatus("File name must be valid");
-        //            return;
-        //        }
-        //        int dotLoc = fileName.lastIndexOf('.');
-        //        if (dotLoc != -1)
-        //        {
-        //            String ext = fileName.substring(dotLoc + 1);
-        //            if (ext.equalsIgnoreCase("xml") == false)
-        //            {
-        //                updateStatus("File extension must be \"xml\"");
-        //                return;
-        //            }
-        //        }
-        updateStatus(null);
-    }
-
-    private void updateStatus(String message)
-    {
-        setErrorMessage(message);
-        setPageComplete(message == null);
     }
 
     public String getFileName()

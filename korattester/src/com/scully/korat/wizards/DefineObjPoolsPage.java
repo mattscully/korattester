@@ -4,17 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-public class DefineObjPoolsPage extends WizardPage
+public class DefineObjPoolsPage extends KoratWizardPage
 {
     private WizTypeInfo wizTypeInfo;
     
@@ -50,7 +48,7 @@ public class DefineObjPoolsPage extends WizardPage
             
             Text size = new Text(container, SWT.BORDER | SWT.SINGLE);
             size.setText("3");
-            addInputField(container, size, true);
+            addInputField(container, size, true, true);
             this.objPoolSizeTextsMap.put(type, size);
             
             Button isNullable = new Button(container, SWT.CHECK);
@@ -60,9 +58,23 @@ public class DefineObjPoolsPage extends WizardPage
         }
 
 
-        //        initialize();
-        //        dialogChanged();
+        clearErrorsForFirstPageLoad();
         setControl(container);
+    }
+    
+    @Override
+    protected boolean isValid()
+    {
+        for(String key : this.objPoolSizeTextsMap.keySet())
+        {
+            String value = this.objPoolSizeTextsMap.get(key).getText();
+            if(NumberUtils.toInt(value, -1) < 0)
+            {
+                addErrorMessage("- Object pool sizes must be integer values >= 0");
+                return false;
+            }
+        }
+        return true;
     }
     
     public int getObjectPoolSize(String objectName)
@@ -73,20 +85,5 @@ public class DefineObjPoolsPage extends WizardPage
     public boolean isNullable(String objectName)
     {
         return this.objPoolNullableCheckboxMap.get(objectName).getSelection();
-    }
-
-    private Label addLabel(Composite container, String text)
-    {
-        Label label = new Label(container, SWT.NULL);
-        label.setText(text);
-        return label;
-    }
-
-    private GridData addInputField(Composite container, Text text, boolean enabled)
-    {
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        text.setLayoutData(gd);
-        text.setEnabled(enabled);
-        return gd;
     }
 }
