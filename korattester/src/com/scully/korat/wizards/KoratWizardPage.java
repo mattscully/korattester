@@ -126,7 +126,7 @@ public abstract class KoratWizardPage extends WizardPage
         }
     }
 
-    protected void clearErrorsForFirstPageLoad()
+    protected void clearErrorsWhenPageFirstLoaded()
     {
         if(!isValid())
         {

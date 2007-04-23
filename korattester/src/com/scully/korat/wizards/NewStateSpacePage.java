@@ -197,7 +197,7 @@ public class NewStateSpacePage extends KoratWizardPage
 	        this.packageName = this.wizTypeInfo.getType().getPackageFragment().getElementName();
         }
         
-        this.clearErrorsForFirstPageLoad();
+        this.clearErrorsWhenPageFirstLoaded();
     }
 
     public IType selectType() throws JavaModelException

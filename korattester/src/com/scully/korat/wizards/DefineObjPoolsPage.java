@@ -58,7 +58,7 @@ public class DefineObjPoolsPage extends KoratWizardPage
         }
 
 
-        clearErrorsForFirstPageLoad();
+        clearErrorsWhenPageFirstLoaded();
         setControl(container);
     }
     
@@ -70,7 +70,7 @@ public class DefineObjPoolsPage extends KoratWizardPage
             String value = this.objPoolSizeTextsMap.get(key).getText();
             if(NumberUtils.toInt(value, -1) < 0)
             {
-                addErrorMessage("- Object pool sizes must be integer values >= 0");
+                addErrorMessage("- Object pool sizes must be integer values greater than or equal to zero.");
                 return false;
             }
         }

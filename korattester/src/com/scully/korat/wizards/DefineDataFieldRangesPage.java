@@ -75,7 +75,7 @@ public class DefineDataFieldRangesPage extends KoratWizardPage
             }
         }
 
-        clearErrorsForFirstPageLoad();
+        clearErrorsWhenPageFirstLoaded();
         setControl(container);
     }
 

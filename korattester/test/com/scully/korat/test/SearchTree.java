@@ -119,8 +119,10 @@ public class SearchTree implements Serializable
         if(!this.bool)
             return false;
 		// checks that empty tree has size zero
+        
 		if (root == null)
 			return size == 0;
+        
 		// checks that the input is a tree
 		if (!isAcyclic())
 			return false;
