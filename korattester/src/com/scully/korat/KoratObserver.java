@@ -7,7 +7,7 @@ import com.scully.korat.finitization.ObjField;
 
 public class KoratObserver implements IKoratObserver
 {
-    Stack observedFields;
+    Stack<ObjField> observedFields;
 
     ObjField[] objFields;
 
@@ -20,7 +20,7 @@ public class KoratObserver implements IKoratObserver
         // TODO: remove first IF statement when instrumentation done
         // this is just to handle case when testing the methods and this
         // class doesn't get initialized (w/ instrumentation, it won't
-        // even be in the test subject's class definition.
+        // even be in the test subject's class definition).
         if (this.objFields != null)
         {
             if (!this.observedFields.contains(this.objFields[idx]))
@@ -50,7 +50,7 @@ public class KoratObserver implements IKoratObserver
     /**
      * @return the observedFields
      */
-    public Stack getObservedFields()
+    public Stack<ObjField> getObservedFields()
     {
         return observedFields;
     }
@@ -58,7 +58,7 @@ public class KoratObserver implements IKoratObserver
     /**
      * @param observedFields the observedFields to set
      */
-    public void setObservedFields(Stack observedFields)
+    public void setObservedFields(Stack<ObjField> observedFields)
     {
         this.observedFields = observedFields;
     }

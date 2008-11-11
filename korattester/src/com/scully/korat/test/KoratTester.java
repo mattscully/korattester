@@ -72,16 +72,14 @@ public class KoratTester<E> implements Iterable<E>
         predicate.setParameters(this.paramValues);
 
         // get the test candidates
-        List candidateStates = this.stateSpace.getCandidateStates();
+        List<CandidateStateDTO> candidateStates = this.stateSpace.getCandidateStates();
 
         // vars for tracking the results
         boolean result = true;
         boolean singleResult = false;
 
-        int count = 0;
-        for (Iterator iter = candidateStates.iterator(); iter.hasNext(); count++)
+        for (CandidateStateDTO candidateState : candidateStates)
         {
-            CandidateStateDTO candidateState = (CandidateStateDTO) iter.next();
             // initialize the root object
             preState.setCandidateState(candidateState);
             postState.setCandidateState(candidateState);
