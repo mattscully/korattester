@@ -1,28 +1,27 @@
 package com.scully.korat.map;
 
+import static org.junit.Assert.*;
+
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import com.scully.korat.map.StateFieldDTO;
 import com.scully.korat.map.StateObjectDTO;
 import com.scully.korat.map.TestStateSpaceDTO;
 
-import junit.framework.TestCase;
-
-public class StateSpaceBeanTest extends TestCase
+public class StateSpaceBeanTest
 {
     TestStateSpaceDTO testStateSpaceDTO;
 
-    protected void setUp() throws Exception
+    @Before
+    public void setUp()
     {
-        super.setUp();
         this.testStateSpaceDTO = new TestStateSpaceDTO();
     }
 
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
-
+    @Test
     public void testAddStateObject()
     {
         StateObjectDTO stateObjectDTO = new StateObjectDTO();
@@ -32,7 +31,7 @@ public class StateSpaceBeanTest extends TestCase
         this.testStateSpaceDTO.addStateObject(stateObjectDTO);
 //        StateObjectDTO[] stateObjects = this.testStateSpaceDTO.getStateObjects();
 //        assertEquals("StateObjectDTO not properly added to TestStateSpaceDTO", stateObjectDTO, stateObjects[0]);
-        List stateObjects = this.testStateSpaceDTO.getStateObjects();
+        List<StateObjectDTO> stateObjects = this.testStateSpaceDTO.getStateObjects();
         assertEquals("StateObjectDTO not properly added to TestStateSpaceDTO", stateObjectDTO, stateObjects.get(0));
     }
 
@@ -47,7 +46,7 @@ public class StateSpaceBeanTest extends TestCase
         this.testStateSpaceDTO.addStateField(stateField);
 //        StateFieldDTO[] stateFields = this.testStateSpaceDTO.getStateFields();
 //        assertEquals("StateFieldDTO not properly added to TestStateSpaceDTO", stateField, stateFields[0]);
-        List stateFields = this.testStateSpaceDTO.getStateFields();
+        List<StateFieldDTO> stateFields = this.testStateSpaceDTO.getStateFields();
         assertEquals("StateFieldDTO not properly added to TestStateSpaceDTO", stateField, stateFields.get(0));
         
     }

@@ -1,24 +1,27 @@
 package com.scully.korat;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 import com.scully.korat.instrument.Loader;
 import com.scully.korat.map.BeanXmlMapper;
 import com.scully.korat.map.TestStateSpaceDTO;
 import com.scully.korat.test.SearchTree_remove;
 
-public class KoratMainTest extends TestCase
+public class KoratMainTest
 {
 
     TestStateSpaceDTO stateSpace;
 
-    protected void setUp() throws Exception
+    @Before
+    public void setUp()
     {
-        super.setUp();
         this.stateSpace = SearchTree_remove.createFiniteStateSpace(3);
     }
 
-    public void testRun() throws Exception
+    @Test
+    public void testRun()
     {
         //        ClassPool pool = new ClassPool(true);
         //        ClassPool pool = ClassPool.getDefault();

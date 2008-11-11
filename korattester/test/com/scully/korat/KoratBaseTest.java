@@ -3,7 +3,7 @@
  */
 package com.scully.korat;
 
-import junit.framework.TestCase;
+import org.junit.Before;
 
 import com.scully.korat.map.CandidateFieldDTO;
 import com.scully.korat.map.CandidateStateDTO;
@@ -15,7 +15,7 @@ import com.scully.korat.map.TestStateSpaceDTO;
  * @author mscully
  * 
  */
-public class KoratBaseTest extends TestCase
+public class KoratBaseTest
 {
 
     KoratEngine korat;
@@ -27,9 +27,9 @@ public class KoratBaseTest extends TestCase
      * 
      * @see junit.framework.TestCase#setUp()
      */
-    protected void setUp() throws Exception
+    @Before
+    public void initKorat()
     {
-        super.setUp();
         stateSpace = createFiniteStateSpace(3);
         KoratEngine.setPruning(false);
         korat = new KoratEngine(stateSpace);
@@ -147,5 +147,4 @@ public class KoratBaseTest extends TestCase
     {
         return stateSpace;
     }
-
 }

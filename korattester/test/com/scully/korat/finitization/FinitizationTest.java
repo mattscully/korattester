@@ -4,10 +4,13 @@
 package com.scully.korat.finitization;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 import com.scully.korat.finitization.ClassDomain;
 import com.scully.korat.finitization.FieldDomain;
@@ -18,13 +21,11 @@ import com.scully.korat.finitization.ObjSet;
 import com.scully.korat.test.SearchTree;
 
 
-import junit.framework.TestCase;
-
 /**
  * @author mscully
  * 
  */
-public class FinitizationTest extends TestCase
+public class FinitizationTest
 {
     private Finitization finitization;
 
@@ -33,20 +34,10 @@ public class FinitizationTest extends TestCase
      * 
      * @see junit.framework.TestCase#setUp()
      */
-    protected void setUp() throws Exception
+    @Before
+    public void setUp()
     {
-        super.setUp();
         this.finitization = new Finitization(SearchTree.class);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
     }
 
     /**
@@ -54,6 +45,7 @@ public class FinitizationTest extends TestCase
      * {@link com.scully.korat.finitization.Finitization#Finitization(java.lang.Class)}.
      * Make sure the rootClass is set correctly.
      */
+    @Test
     public void testFinitizationRootClass()
     {
         assertSame("Conflicting root class for Finitization", SearchTree.class, this.finitization.rootClass);
@@ -64,6 +56,7 @@ public class FinitizationTest extends TestCase
      * {@link com.scully.korat.finitization.Finitization#Finitization(java.lang.Class)}.
      * Make sure the rootObject is set correctly.
      */
+    @Test
     public void testFinitizationRootObject()
     {
         assertTrue("Conflicting root object for Finitization", this.finitization.rootObject instanceof SearchTree);
@@ -74,6 +67,7 @@ public class FinitizationTest extends TestCase
      * {@link com.scully.korat.finitization.Finitization#Finitization(java.lang.Class)}.
      * Make sure the objFieldsByName gets populated.
      */
+    @Test
     public void testFinitizationObjFieldsCreated()
     {
         int expectedSize = 3;
@@ -87,28 +81,29 @@ public class FinitizationTest extends TestCase
      * {@link com.scully.korat.finitization.Finitization#Finitization(java.lang.Class)}.
      * Make sure the objFieldsByName gets populated correctly.
      */
+    @Test
     public void testFinitizationObjFieldsCorrect()
     {
-        Map objFields = this.finitization.objFieldsByName;
+        Map<Field, List<ObjField>> objFields = this.finitization.objFieldsByName;
 
         // test for root
         Field key;
         try
         {
             key = SearchTree.class.getDeclaredField("root");
-            List objFieldList = (ArrayList) objFields.get(key);
+            List<ObjField> objFieldList = objFields.get(key);
             assertNotNull("ObjField doesn't exist.", objFieldList);
             assertEquals("ObjField doesn't exist.", 1, objFieldList.size());
-            ObjField objField = (ObjField) objFieldList.get(0);
+            ObjField objField = objFieldList.get(0);
             assertTrue("ObjField accessibility incorrect.", objField.getField().isAccessible());
             assertSame("ObjField mapped to wrong object", this.finitization.getRootObject(), objField.getObject());
 
             // test for size
             key = SearchTree.class.getDeclaredField("size");
-            objFieldList = (ArrayList) objFields.get(key);
+            objFieldList = objFields.get(key);
             assertNotNull("ObjField doesn't exist.", objFieldList);
             assertEquals("ObjField doesn't exist.", 1, objFieldList.size());
-            objField = (ObjField) objFieldList.get(0);
+            objField = objFieldList.get(0);
             assertTrue("ObjField accessibility incorrect.", objField.getField().isAccessible());
             assertSame("ObjField mapped to wrong object", this.finitization.getRootObject(), objField.getObject());
         }
@@ -157,27 +152,28 @@ public class FinitizationTest extends TestCase
      * Verify that all fields get registered correctly when createObjects() is
      * called.
      */
+    @Test
     public void testCreateObjectsRegistersFields()
     {
         int numObjects = 3;
-        Class nodeClass = SearchTree.Node.class;
+        Class<SearchTree.Node> nodeClass = SearchTree.Node.class;
         this.finitization.createObjects(nodeClass, numObjects);
 
-        Map objFields = this.finitization.objFieldsByName;
+        Map<Field, List<ObjField>> objFields = this.finitization.objFieldsByName;
 
         // test for Node.left
-        List objFieldList;
+        List<ObjField> objFieldList;
         try
         {
-            objFieldList = (ArrayList) objFields.get(SearchTree.Node.class.getDeclaredField("left"));
+            objFieldList = objFields.get(SearchTree.Node.class.getDeclaredField("left"));
             verifyObjFieldList(objFieldList, nodeClass, numObjects);
 
             // test for Node.right
-            objFieldList = (ArrayList) objFields.get(SearchTree.Node.class.getDeclaredField("right"));
+            objFieldList = objFields.get(SearchTree.Node.class.getDeclaredField("right"));
             verifyObjFieldList(objFieldList, nodeClass, numObjects);
 
             // test for Node.value
-            objFieldList = (ArrayList) objFields.get(SearchTree.Node.class.getDeclaredField("value"));
+            objFieldList = objFields.get(SearchTree.Node.class.getDeclaredField("value"));
             verifyObjFieldList(objFieldList, nodeClass, numObjects);
         }
         catch (SecurityException e)
@@ -197,13 +193,12 @@ public class FinitizationTest extends TestCase
      * @param nodeClass
      * @param numObjects
      */
-    private void verifyObjFieldList(List objFieldList, Class nodeClass, int numObjects)
+    private void verifyObjFieldList(List<ObjField> objFieldList, Class<SearchTree.Node> nodeClass, int numObjects)
     {
         assertNotNull("ObjField doesn't exist.", objFieldList);
         assertEquals("Incorrect number of ObjFields created.", numObjects, objFieldList.size());
-        for (Iterator iter = objFieldList.iterator(); iter.hasNext();)
+        for (ObjField objField : objFieldList)
         {
-            ObjField objField = (ObjField) iter.next();
             assertTrue("ObjField accessibility incorrect.", objField.getField().isAccessible());
             assertSame("ObjField is the wrong Class", nodeClass, objField.getObject().getClass());
         }
@@ -213,6 +208,7 @@ public class FinitizationTest extends TestCase
      * Verify that the FieldDomain gets created correctly. Test method for
      * {@link com.scully.korat.finitization.Finitization#createObjects(java.lang.String, int)}.
      */
+    @Test
     public void testCreateObjectsFieldDomain()
     {
         int numObjects = 3;
@@ -233,10 +229,11 @@ public class FinitizationTest extends TestCase
      * {@link com.scully.korat.finitization.Finitization#set(java.lang.String, com.scully.korat.finitization.FinSet)}.
      * Verify the state space is constructed correctly.
      */
+    @Test
     public void testSet()
     {
         int numObjects = 3, expectedSpaceSize = 0, expectedDomainSize = 0;
-        Map space = this.finitization.space;
+        Map<ObjField, FieldDomain> space = this.finitization.space;
 
         ObjSet nodes = this.finitization.createObjects(SearchTree.Node.class, numObjects);
         nodes.add(null);
@@ -298,16 +295,15 @@ public class FinitizationTest extends TestCase
      * @param expectedDomainSize
      * @param type
      */
-    private void verifyFieldDomain(Map space, Field field, int expectedSpaceSize, int expectedDomainSize,
-            Class fieldType)
+    private void verifyFieldDomain(Map<ObjField, FieldDomain> space, Field field, int expectedSpaceSize, int expectedDomainSize,
+            Class<?> fieldType)
     {
-        List objFieldList;
+        List<ObjField> objFieldList;
         assertEquals("State Space is incorrect size.", expectedSpaceSize, space.size());
-        objFieldList = (List) this.finitization.objFieldsByName.get(field);
-        for (Iterator iter = objFieldList.iterator(); iter.hasNext();)
+        objFieldList = this.finitization.objFieldsByName.get(field);
+        for (ObjField objField : objFieldList)
         {
-            ObjField objField = (ObjField) iter.next();
-            FieldDomain fieldDomain = (FieldDomain) space.get(objField);
+            FieldDomain fieldDomain = space.get(objField);
             assertEquals("FieldDomain incorrect size", expectedDomainSize, fieldDomain.getSize());
             for (int i = 0; i < fieldDomain.getSize(); i++)
             {

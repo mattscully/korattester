@@ -1,32 +1,36 @@
 package com.scully.korat;
 
+import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
-import junit.framework.TestSuite;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 import com.scully.korat.finitization.FinitizationTest;
 import com.scully.korat.finitization.IntArraySetTest;
 import com.scully.korat.instrument.InstrumenterTest;
 import com.scully.korat.map.BeanXmlMapperTest;
 import com.scully.korat.map.StateSpaceBeanTest;
+import com.scully.korat.test.SearchTreeInstrumentTest;
 
+
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+    CandidateStateTest.class
+    ,FinitizationTest.class
+    ,StateSpaceBeanTest.class
+    ,BeanXmlMapperTest.class
+    ,InstrumenterTest.class
+    ,IntArraySetTest.class
+    ,KoratMainTest.class
+    ,SearchTreeInstrumentTest.class
+})
 public class KoratTestSuite
 {
 
     public static Test suite()
     {
-        TestSuite suite = new TestSuite("Test for com.scully.korat");
-        //$JUnit-BEGIN$
-//        suite.addTestSuite(KoratSearchTest.class);
-        suite.addTestSuite(CandidateStateTest.class);
-        suite.addTestSuite(FinitizationTest.class);
-        suite.addTestSuite(StateSpaceBeanTest.class);
-        suite.addTestSuite(BeanXmlMapperTest.class);
-        suite.addTestSuite(InstrumenterTest.class);
-        suite.addTestSuite(IntArraySetTest.class);
-        suite.addTestSuite(KoratMainTest.class);
-//        suite.addTestSuite(SearchTreeInstrumentTest.class);
-        //$JUnit-END$
-        return suite;
+        return new JUnit4TestAdapter(KoratTestSuite.class);
     }
 
 }

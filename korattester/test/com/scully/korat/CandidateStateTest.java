@@ -4,15 +4,16 @@
 package com.scully.korat;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 import com.scully.korat.CandidateState;
 import com.scully.korat.finitization.FieldDomain;
-import com.scully.korat.finitization.Finitization;
 import com.scully.korat.finitization.ObjField;
 
 
@@ -24,26 +25,26 @@ public class CandidateStateTest extends KoratBaseTest
 {
     CandidateState candidateState;
 
-    protected void setUp() throws Exception
+    @Before
+    public void initCandidateState() throws Exception
     {
-        super.setUp();
         this.candidateState = this.korat.getCandidateState();
     }
 
     /**
      * Test method for {@link com.scully.korat.CandidateState#initStateValueIndexes()}.
      */
+    @Test
     public void testInitStateValueIndexes()
     {
         // assert correct size
         assertEquals("Wrong number of fields in map.", 12, this.candidateState.getStateValueIndexes().size());
 
         // assert correct values
-        Collection values = this.candidateState.getStateValueIndexes().values();
+        Collection<Integer> values = this.candidateState.getStateValueIndexes().values();
         Integer zero = new Integer(0);
-        for (Iterator iter = values.iterator(); iter.hasNext();)
+        for(Integer index : values)
         {
-            Integer index = (Integer) iter.next();
             assertEquals("Field value index not set to zero.", zero, index);
         }
     }
@@ -79,9 +80,10 @@ public class CandidateStateTest extends KoratBaseTest
      * Test method for
      * {@link com.scully.korat.CandidateState#setValueAtIndex(com.scully.korat.finitization.ObjField, int)}.
      */
+    @Test
     public void testSetValueAtIndexObjFieldInt()
     {
-        Map stateValueIndexes = new LinkedHashMap();
+        Map<ObjField, Integer> stateValueIndexes = new LinkedHashMap<ObjField, Integer>();
         // set random indexes
         // indexes from 0 to 2 will be valid for all fields (since 'value' only
         // has 3)
@@ -110,7 +112,7 @@ public class CandidateStateTest extends KoratBaseTest
         {
             field = this.candidateState.stateFields[i];
             FieldDomain fieldDomain = (FieldDomain) this.candidateState.stateSpace.get(field);
-            Object indexValue = fieldDomain.getValueAtIndex((Integer) stateValueIndexes.get(field));
+            Object indexValue = fieldDomain.getValueAtIndex(stateValueIndexes.get(field));
             assertEquals("Field value set to wrong index.", indexValue, field.getFieldValue());
         }
     }

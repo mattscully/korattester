@@ -8,6 +8,10 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 import com.scully.korat.map.BeanXmlMapper;
 import com.scully.korat.map.CandidateFieldDTO;
 import com.scully.korat.map.CandidateStateDTO;
@@ -16,24 +20,20 @@ import com.scully.korat.map.StateObjectDTO;
 import com.scully.korat.map.TestStateSpaceDTO;
 import com.scully.korat.test.SearchTree;
 
-import junit.framework.TestCase;
-
 /**
  * @author mscully
  * 
  */
-public class BeanXmlMapperTest extends TestCase
+public class BeanXmlMapperTest
 {
     TestStateSpaceDTO testStateSpaceDTO;
 
     /*
-     * (non-Javadoc)
-     * 
      * @see junit.framework.TestCase#setUp()
      */
-    protected void setUp() throws Exception
+    @Before
+    public void setUp()
     {
-        super.setUp();
         this.testStateSpaceDTO = new TestStateSpaceDTO();
 
         // set the root
@@ -204,19 +204,10 @@ public class BeanXmlMapperTest extends TestCase
         this.testStateSpaceDTO.addCandidateState(candidateStateDTO);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see junit.framework.TestCase#tearDown()
-     */
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-    }
-
     /**
      * Test method for {@link com.scully.korat.map.BeanXmlMapper#print()}.
      */
+    @Test
     public void testWriteReadBean()
     {
         // TODO: Include in test suite
